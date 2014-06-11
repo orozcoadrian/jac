@@ -1,6 +1,7 @@
 import requests
 import sys
 import unittest
+from bs4 import BeautifulSoup
 
 class Test1(unittest.TestCase):
     def test_one(self):
