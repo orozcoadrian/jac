@@ -50,7 +50,6 @@ def main3():
     logging.debug('jac starting')
     #logging.debug('jac starting2')
     #print('asdf')
-    #return
     start = time.time()
     timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
 
