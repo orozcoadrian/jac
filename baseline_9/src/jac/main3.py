@@ -60,6 +60,16 @@ def main3():
     jac.sales.sales.add_foreclosures(mrs,fnum.get_limit())
     date_counts = pprint.pformat(jac.myutils.get_dates_count_map(mrs.get_records())).replace('\n', '<br>').replace('datetime.datetime(','').replace(', 0, 0','').replace(', ','/').replace(')','')
 
+    dates = mydate.get_next_dates(date.today())
+    print(dates)
+    dates_to_add = dates#[0:2]
+    date_strings_to_add = [x.strftime("%m/%d/%Y") for x in dates_to_add]
+
+    #date_strings_to_add2 = [x.strftime("%A %b %d") for x in dates_to_add]
+    #date_strings_to_add2.extend(args.dates)
+    short_date_strings_to_add = [x.strftime("%m.%d") for x in dates_to_add]
+    abc = '-'.join([short_date_strings_to_add[0], short_date_strings_to_add[1]])
+
     parent_out_dir = 'outputs'
     out_dir = parent_out_dir+'/'+timestamp
     if args.out_tag:
@@ -67,7 +77,7 @@ def main3():
     os.makedirs(out_dir)
     print(os.path.abspath(out_dir))
 
-    the_tag = timestamp
+    the_tag = abc#timestamp
     if args.out_tag:
         the_tag += '_' + args.out_tag
     filename = the_tag + '.xls'
@@ -79,8 +89,7 @@ def main3():
 
     #dataset = get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add)
 
-    dates_to_add = mydate.get_next_dates(date.today())
-    date_strings_to_add = [x.strftime("%m/%d/%Y") for x in dates_to_add]
+
 
     datasets = []
     datasets.extend([get_mainsheet_dataset(args, fnum, mrs, out_dir, date_str) for date_str in date_strings_to_add])
@@ -95,10 +104,7 @@ def main3():
     if args.open:
         os.system('start "" "C:/Program Files/Microsoft Office/Office12/Excel.exe" /e '+out_file)
 
-    #date_strings_to_add2 = [x.strftime("%A %b %d") for x in dates_to_add]
-    #date_strings_to_add2.extend(args.dates)
-    short_date_strings_to_add = [x.strftime("%m.%d") for x in dates_to_add]
-    abc = '-'.join([short_date_strings_to_add[0], short_date_strings_to_add[1]])
+
     print(abc)
     body = 'this result is for: ' + abc
     body += '<br>total records: ' + str(len(mrs.get_records()))

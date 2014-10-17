@@ -88,11 +88,17 @@ class MainSheetBuilder(object):
                     the_str = i['bcpao_item']['address']
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'zip' in h.get_display():
-                row.append(jac.xl3.Cell.from_display(self.try_get(i, 'bcpao_item', 'zip_code')))
+                value_to_use = jac.xl3.Cell.from_display('')
+                zip_str = self.try_get(i, 'bcpao_item', 'zip_code')
+                if zip_str:
+                    value_to_use = jac.xl3.Cell.from_display(int(zip_str))
+                row.append(value_to_use)
             if 'latest_amount_due' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if 'latest_amount_due' in i:
-                    value_to_use = jac.xl3.Cell.from_display(i['latest_amount_due'])
+                    a_str = i['latest_amount_due'].replace('$', '').replace(',', '')
+                    if a_str:
+                        value_to_use = jac.xl3.Cell.from_display(float(a_str))
                 row.append(value_to_use)
             if 'case_info' in h.get_display():
                 link_str = ''
@@ -143,16 +149,20 @@ class MainSheetBuilder(object):
                     fc_str = i['bcpao_item']['frame code']
                 row.append(jac.xl3.Cell.from_display(fc_str))
             if 'latest market value total' in h.get_display():
-                row.append(jac.xl3.Cell.from_display(self.try_get(i, 'bcpao_item', 'latest market value total')))
+                value_to_use = jac.xl3.Cell.from_display('')
+                a_str = self.try_get(i, 'bcpao_item', 'latest market value total').replace('$', '').replace(',', '')
+                if a_str:
+                    value_to_use = jac.xl3.Cell.from_display(float(a_str))
+                row.append(value_to_use)
             if 'total base area' in h.get_display():
                 the_str = ''
                 if 'bcpao_item' in i and 'total base area' in i['bcpao_item']:
-                    the_str = i['bcpao_item']['total base area']
+                    the_str = float(i['bcpao_item']['total base area'].replace(',', ''))
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'year built' in h.get_display():
                 the_str = ''
                 if 'bcpao_item' in i and 'year built' in i['bcpao_item']:
-                    the_str = i['bcpao_item']['year built']
+                    the_str = int(i['bcpao_item']['year built'])
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)
