@@ -51,26 +51,7 @@ def do(out_dir, year, court_type, seq_number, cfid, cftoken):
     ret2 = reg(out_dir, year, court_type, seq_number, cfid, cftoken)
     ret = dict(itertools.chain(ret1.items(), ret2.items()))
 
-    create_parent_htm(out_dir, year, court_type, seq_number)
     return ret
-
-def create_parent_htm(out_dir, year, court_type, seq_number):
-    id2 = year+'_'+court_type+'_'+seq_number
-    # print('create_parent_htm('+id+')')
-    template = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN"\n' \
-            '   "http://www.w3.org/TR/html4/frameset.dtd">\n' \
-            '<HTML>\n' \
-            '<HEAD>\n' \
-            '<TITLE>'+id2+'</TITLE>\n' \
-            '</HEAD>\n' \
-            '<FRAMESET cols="50%, 50%">\n' \
-            '      <FRAME src="'+id2+'_case_info.htm">\n' \
-            '      <FRAME src="'+id2+'_reg_actions.htm">\n' \
-            '  </FRAMESET>\n' \
-            '</HTML>'
-    if out_dir:
-        with open(out_dir+'/'+id2+'_parent.htm', 'w') as handle:
-            handle.write(template)
 
 def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
     ret = {}
