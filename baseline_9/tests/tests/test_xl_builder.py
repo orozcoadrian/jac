@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         headers=instance.get_headers()
         header_strings = [cell.get_display() for cell in headers]
         #self.assertEqual(24, len(headers))
-        self.assertEqual(['case_number', 'case_title', 'foreclosure_sale_date', 'brevard clerk', 'count', 'address', 'zip', 'latest_amount_due', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest market value total', 'total base area', 'sq feet', 'year built', 'owed - ass',  'Classic Map',  'avg 250',  'avg 500',  'avg 750',  'avg 1000'], header_strings)
+        self.assertEqual(['case_number', 'case_title', 'foreclosure_sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'latest_amount_due', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest market value total', 'total base area', 'year built', 'owed - ass',  'Classic Map',  'avg 250',  'avg 500',  'avg 750',  'avg 1000'], header_strings, header_strings)
         test_row=[]
         test_item={}
         test_item['case_number']='cn'
@@ -58,7 +58,7 @@ class Test(unittest.TestCase):
         self.assertEqual(19, len(headers))
 
         header_strings = [cell.get_display() for cell in headers]
-        self.assertEqual(['high', 'when', 'case_number', 'case_title', 'foreclosure_sale_date', 'brevard clerk', 'count', 'address', 'zip', 'latest_amount_due', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest market value total', 'total base area', 'sq feet', 'year built', 'owed - ass'], header_strings)
+        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'foreclosure_sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'latest_amount_due', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest market value total', 'total base area', 'year built', 'owed - ass'], header_strings)
 
     def test_MainSheetBuilder_with_rows(self):
         instance = jac.xl_builder.MainSheetBuilder()
@@ -74,7 +74,7 @@ class Test(unittest.TestCase):
         #for row in data_set.get_items():
         header_row = data_set.get_items()[0]
         self.assertEqual('high', header_row[0].get_display())
-        self.assertEqual('when', header_row[1].get_display())
+        self.assertEqual('win', header_row[1].get_display())
         self.assertEqual('case_number', header_row[2].get_display())
         first_data_row = data_set.get_items()[1]
         self.assertEqual('', first_data_row[0].get_display())
