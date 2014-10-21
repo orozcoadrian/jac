@@ -19,10 +19,10 @@ def main():
     r = requests.get(uri)
     print(r.status_code)
     print(r.text)
-
-def main3():
+    
+def do_tax_sheet(date_str):
     maps=[]
-    date_str = '10/23/2014'
+
     do('https://www.brevard.realforeclose.com/index.cfm?zaction=AUCTION&Zmethod=PREVIEW&AUCTIONDATE='+date_str, False, maps)
     first = True
     currentPageDir = 0
@@ -36,15 +36,31 @@ def main3():
     print('+'*100)
     print(str(len(maps))+' records')
 
-    sheetBuilder = TaxSheetBuilder(date_str)
+    sheetBuilder = TaxSheetBuilder(date_str, date_str.replace('/2014', '').replace('/', '_'))
     #sheetBuilder.set_args(args)
     dataset = sheetBuilder.add_sheet(maps)
+    return dataset
+
+def do_tax(date_strs):
+    
+    datasets = []
+    for date_str in date_strs:
+        datasets.append(do_tax_sheet(date_str))
 
     book = Workbook()
-    jac.xl3.add_data_set_sheet(dataset, book)
-    out_file = 'tax_deeds_' + date_str.replace('/','_')+'.xls'
+    for dataset in datasets:
+        jac.xl3.add_data_set_sheet(dataset, book)
+    date0 = date_strs[0].replace('/2014', '').replace('/', '_')
+    date1 = date_strs[1].replace('/2014', '').replace('/', '_')
+    abc = '-'.join([date0, date1])
+    out_file = 'tax_deeds_' + abc+'.xls'
     book.save(out_file)
     print(out_file)
+    return out_file
+
+def main3():
+
+    out_file = do_tax(['10/23/2014', '10/24/2014'])
 
     if True:
         os.system('start "" "C:/Program Files/Microsoft Office/Office12/Excel.exe" /e '+out_file)
