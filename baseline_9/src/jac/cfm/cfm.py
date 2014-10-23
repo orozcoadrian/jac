@@ -23,6 +23,7 @@ def case_info(out_dir, year, court_type, seq_number, cfid, cftoken):
     data=get_data(year, court_type, seq_number)
 #     r = requests.post(url, data, headers=headers, stream=True)
     r = requests.post(url, data, headers=headers, stream=True)
+    #print(r.url)
     # print(r.cookies)
     # print(r.cookies['CFID'])
     # print(r.cookies['CFTOKEN'])
