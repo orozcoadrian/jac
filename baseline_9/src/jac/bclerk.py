@@ -4,7 +4,7 @@ import re
 import itertools
 
 def get_legal_by_case(case):
-    print('get_legal_by_case('+case+')')
+    print('get_legal_by_case("'+case+')"')
     ret={}
     
     uri = 'http://web1.brevardclerk.us/oncoreweb/search.aspx'
@@ -34,6 +34,7 @@ def get_legal_by_case(case):
     return ret
     
 def get_legal_from_str(the_str):
+    print('get_legal_from_str('+the_str+')')
     ret={}
     m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) (BLK (?P<blk>[0-9a-zA-Z]+) )?)?PB (?P<pb>\d+) PG (?P<pg>\d+) (?P<subd>.*) S \d+ T \d+ R \d+ SUBID (?P<subid>[0-9a-zA-Z]+)', the_str)
     if m:

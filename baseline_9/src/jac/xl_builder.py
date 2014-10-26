@@ -98,7 +98,10 @@ class MainSheetBuilder(object):
                 if 'latest_amount_due' in i:
                     a_str = i['latest_amount_due'].replace('$', '').replace(',', '')
                     if a_str:
-                        value_to_use = jac.xl3.Cell.from_display(float(a_str))
+                        try:
+                            value_to_use = jac.xl3.Cell.from_display(float(a_str))
+                        except:
+                            value_to_use = jac.xl3.Cell.from_display(a_str)
                 row.append(value_to_use)
             if 'case_info' in h.get_display():
                 link_str = ''
@@ -152,7 +155,10 @@ class MainSheetBuilder(object):
                 value_to_use = jac.xl3.Cell.from_display('')
                 a_str = self.try_get(i, 'bcpao_item', 'latest market value total').replace('$', '').replace(',', '')
                 if a_str:
-                    value_to_use = jac.xl3.Cell.from_display(float(a_str))
+                    try:
+                        value_to_use = jac.xl3.Cell.from_display(float(a_str))
+                    except:
+                        value_to_use = jac.xl3.Cell.from_display(a_str)
                 row.append(value_to_use)
             if 'total base area' in h.get_display():
                 the_str = ''

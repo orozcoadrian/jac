@@ -174,7 +174,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
             logging.info(f.get_name())
             f.fetch(r)
 
-
+    pprint.pprint(mrs.get_records())
     sheetBuilder = jac.xl_builder.MainSheetBuilder(sheet_name)
     sheetBuilder.set_args(args)
     dataset = sheetBuilder.add_sheet(mrs.get_records())

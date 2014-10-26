@@ -65,9 +65,10 @@ class TestUM(unittest.TestCase):
         self.assertEqual(i , '2104215')
         
     def test_bclerk_then_bcpao(self):
-        legal_str='LT 36 PB 29 PG 46 SHERWOOD FOREST P.U.D. II, REPLAT OF STAGE ONE, TRACT A S 24 T 21 R 34 SUBID 05'
-        print(str(bclerk.get_legal_from_str(legal_str)))
+        #legal_str='LT 36 PB 29 PG 46 SHERWOOD FOREST P.U.D. II, REPLAT OF STAGE ONE, TRACT A S 24 T 21 R 34 SUBID 05'
+        legal_str = 'LT 3 BLK A PB 28 PG 2 COUNTRY LAKE ESTS S 1/2 OF S 30 T 24 R 36 SUBID 54'
         legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
         print(str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg']))))
         
     def test_one(self):
@@ -124,6 +125,9 @@ def get_acct_by_legal(legal):
     data=None
     offset=82
     if pb is not None and pg is not None and lot is not None and block is not None:
+        data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        offset=86
+    elif sub is not None and pg is not None and lot is not None and block is not None:
         data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
     elif pb is not None and pg is not None and lot is not None:
         data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
