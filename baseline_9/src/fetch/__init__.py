@@ -37,7 +37,7 @@ class Bcpao(Fetcher):
     def fetch(self, mr):
         legal=mr.item['legal']
         if 'subd' in legal:
-            acc=bcpao.get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg']))
+            acc=bcpao.get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid']))
             # print(acc)
             mr.item['bcpao_acc']=acc
             mr.item['bcpao_item'] = bcpao.get_bcpaco_item(acc)

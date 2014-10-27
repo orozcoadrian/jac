@@ -6,21 +6,22 @@ import itertools
 def get_legal_by_case(case):
     print('get_legal_by_case("'+case+')"')
     ret={}
-    
+
     uri = 'http://web1.brevardclerk.us/oncoreweb/search.aspx'
     response = urlopen(uri)
-        
+
     forms = ParseResponse(response, backwards_compat=False)
     form = forms[0]
-    # print form
-    
+#     print form
+
     form["txtCaseNumber"] = case #"orozco"
     form["SearchType"] = 'casenumber' #"orozco"
+    form["txtDocTypes"] = 'JRP' #"orozco"
     # form["txtName"] = "orozco"
     soup = BeautifulSoup(urlopen(form.click()).read())
     # print soup.renderContents()
-    
-    
+
+
     # bi_cell = soup.find(text="                                                                                                LT 22 BLK 10 PB 5 PG 20 EAU GALLIE SHORES S 35 T 26 R 37 SUBID 02")
     bi_cell = soup.findAll(text=re.compile('.*SUBID.*'))#"td", { "class" : "stdFontResults" })
     # print(bi_cell)
@@ -32,11 +33,11 @@ def get_legal_by_case(case):
             break
     print(ret)
     return ret
-    
+
 def get_legal_from_str(the_str):
     print('get_legal_from_str('+the_str+')')
     ret={}
-    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) (BLK (?P<blk>[0-9a-zA-Z]+) )?)?PB (?P<pb>\d+) PG (?P<pg>\d+) (?P<subd>.*) S \d+ T \d+ R \d+ SUBID (?P<subid>[0-9a-zA-Z]+)', the_str)
+    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+) R (?P<r>\d+) SUBID (?P<subid>[0-9a-zA-Z]+)', the_str)
     if m:
         # pprint.pprint(m)
         # pprint.pprint(m.groups())

@@ -36,6 +36,9 @@ class MainSheetBuilder(object):
     @staticmethod
     def get_bclerk_name_url(name):  # TODO: move this to xl3
         return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=' + urllib.quote(name) + '&bt=OR&d=5%2F31%2F2014&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES'
+    @staticmethod
+    def get_case_number_url(cn):
+        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn='+cn+'&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
     def get_items_to_use(self, all_items):
         return all_items  # no filtering here
     def get_headers(self):
@@ -132,7 +135,7 @@ class MainSheetBuilder(object):
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
                 row.append(jac.xl3.Cell.from_link('link', link_str))
             if 'liens-case' in h.get_display():
-                row.append(jac.xl3.Cell.from_link(self.get_display_case_number(i['case_number']), cfm.get_case_number_url(i['case_number'])))
+                row.append(jac.xl3.Cell.from_link(self.get_display_case_number(i['case_number']), self.get_case_number_url(i['case_number'])))
             if 'liens-name' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if r.get_name_combos() is not None and len(r.get_name_combos()) > 0:
@@ -168,7 +171,10 @@ class MainSheetBuilder(object):
             if 'year built' in h.get_display():
                 the_str = ''
                 if 'bcpao_item' in i and 'year built' in i['bcpao_item']:
-                    the_str = int(i['bcpao_item']['year built'])
+                    try:
+                        the_str = int(i['bcpao_item']['year built'])
+                    except:
+                        print("error parsing i['bcpao_item']['year built']='"+i['bcpao_item']['year built']+"' as an int")
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)

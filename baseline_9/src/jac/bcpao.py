@@ -20,7 +20,7 @@ import bclerk
 class TestUM(unittest.TestCase):
     def test_house(self):
         # case_number	            case_title	                    foreclosure_sale_date	brevard clerk	count	address	                            zip code	latest_amount_due	liens	                    defendants	bcpao acct	frame code	latest market value total	total base area	sq feet	year built
-        # 05-2007-CA-030452-XXXX-XX	DEUTSCHE BANK VS ROLANDO PEREZ	06/04/2014	            link	        1	    1123 FLOWER ST NW , PALM BAY 32907	32907	    237,804.43	        05-2007-CA-030452-XXXX-XX	 	        2807459					
+        # 05-2007-CA-030452-XXXX-XX	DEUTSCHE BANK VS ROLANDO PEREZ	06/04/2014	            link	        1	    1123 FLOWER ST NW , PALM BAY 32907	32907	    237,804.43	        05-2007-CA-030452-XXXX-XX	 	        2807459
 
         i=get_bcpaco_item('2807459')
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2807459&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
@@ -34,11 +34,11 @@ class TestUM(unittest.TestCase):
         self.assertEqual(i['total base area'] , '1,173')
         self.assertEqual(i['use code']['use_code'] , '110')
         self.assertEqual(i['use code']['use_code_str'] , 'R-SINGLE FAMILY RESIDENCE')
-        
+
     def test_condo(self):
         # case_number	            case_title	                    foreclosure_sale_date	brevard clerk	count	address	                                    zip code	latest_amount_due	liens	                    defendants	bcpao acct	frame code	latest market value total	total base area	sq feet	year built
-        # 05-2014-CA-013327-XXXX-XX	BANK AMERICA VS ERNEST FINNEY	06/05/2014	            link	        208	    7667 N WICKHAM RD  1009, MELBOURNE 32940	32940	    202,665.14	        05-2014-CA-013327-XXXX-XX	 	        2630481		            $58,030		                                1,256	1990	
-        
+        # 05-2014-CA-013327-XXXX-XX	BANK AMERICA VS ERNEST FINNEY	06/05/2014	            link	        208	    7667 N WICKHAM RD  1009, MELBOURNE 32940	32940	    202,665.14	        05-2014-CA-013327-XXXX-XX	 	        2630481		            $58,030		                                1,256	1990
+
         i=get_bcpaco_item('2630481')
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2630481&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
         pprint.pprint(i)
@@ -49,28 +49,114 @@ class TestUM(unittest.TestCase):
         #self.assertEqual(i['year built'] , '1990') # broken
         #self.assertEqual(i['sq feet'] , '1,256') # broken
         # self.assertEqual(i['total base area'] , '1,173')
-        
+
     def test_legal(self):
+#                       T  R  S  SUBID    BLK
+#         Parcel ID:    28-36-26-KN-02134.0-0028.00
         #                     sub,                   lot, block,   pb,   pg
-        i=get_acct_by_legal(('PORT MALABAR UNIT 42', '28', '2134', '21','105'))
+        i=get_acct_by_legal(('PORT MALABAR UNIT 42', '28', '2134', '21','105', '26', '28', '35', '00'))
         pprint.pprint(i)
         self.assertEqual(i , '2807459')
-        
+
     def test_legal_2(self):
         # LT 20 PB 21 PG 45 HIGH ACRES ESTATES UNIT NO 1 S 19 T 21 R 35 SUBID 25:
         # {'subid': '25', 'subd': 'HIGH ACRES ESTATES UNIT NO 1', 'pb': '21', 'lt': '20', 'pg': '45', 'blk': None}
         #                     sub,                           lot,  block,   pb,   pg
-        i=get_acct_by_legal(('HIGH ACRES ESTATES UNIT NO 1', '20', None, '21','45'))
+        i=get_acct_by_legal(('HIGH ACRES ESTATES UNIT NO 1', '20', None, '21','45', '19', '21', '35', '25'))
         pprint.pprint(i)
         self.assertEqual(i , '2104215')
-        
-    def test_bclerk_then_bcpao(self):
-        #legal_str='LT 36 PB 29 PG 46 SHERWOOD FOREST P.U.D. II, REPLAT OF STAGE ONE, TRACT A S 24 T 21 R 34 SUBID 05'
+
+    def test_bclerk_then_bcpao1(self):
         legal_str = 'LT 3 BLK A PB 28 PG 2 COUNTRY LAKE ESTS S 1/2 OF S 30 T 24 R 36 SUBID 54'
         legal=bclerk.get_legal_from_str(legal_str)
         print('legal='+str(legal))
-        print(str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg']))))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2423677')
+
+    def test_bclerk_then_bcpao2(self):
+        legal_str='LT 36 PB 29 PG 46 SHERWOOD FOREST P.U.D. II, REPLAT OF STAGE ONE, TRACT A S 24 T 21 R 34 SUBID 05'
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2101315')
+
+    def test_bclerk_then_bcpao3(self):
+        legal_str='BLK 8S U 3103 NE 1/4 OF NE 1/4 EX E 50 FT & EX CYPRESS SPRINGS CONDO ORB 5620/2802 S 16 T 28 R 37 SUBID 00'
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        self.assertEqual(legal['blk'], '8S')
+        self.assertEqual(legal['s'], '16')
+        self.assertEqual(legal['r'], '37')
+        self.assertEqual(legal['t'], '28')
+        self.assertEqual(legal['subid'], '00')
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2864518')
         
+    def test_bclerk_then_bcpao4(self):
+        legal_str='LT 1928 PB 10 PG 21 U 401 WINSLOW RESERVE SUBD THE MERIDIAN, A CONDOMINIUM PH I ORB 5782/5772 S 26 T 24 R 37 SUBID 27'
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        self.assertEqual(legal['blk'], None)
+        self.assertEqual(legal['s'], '26')
+        self.assertEqual(legal['r'], '37')
+        self.assertEqual(legal['t'], '24')
+        self.assertEqual(legal['subid'], '27')
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+#         self.assertEqual(acct, '---')
+
+    def test_bclerk_then_bcpao5(self):
+        legal_str='BLK 283F U 706 N 7.5 FT OF S 632.5 FT OF LOT 2 CANAVERAL BAY CONDO PH VII ORB 2648/2338 S 22 T 24 R 37 SUBID 00'
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        self.assertEqual(legal['blk'], '283F')
+        self.assertEqual(legal['s'], '22')
+        self.assertEqual(legal['r'], '37')
+        self.assertEqual(legal['t'], '24')
+        self.assertEqual(legal['subid'], '00')
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2441816')
+        
+    def test_bclerk_then_bcpao6(self):
+        legal_str='LT 7804 PB 29 PG 71 U 3 LA CITA SECTION 5 SWEET MAGNOLIA CONDO ORB 2732/2040 S 16 T 22 R 35 SUBID MR'
+#         Parcel ID:    22-35-16-MR-00000.0-0078.04
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2207771')
+        
+    def test_bclerk_then_bcpao7(self):
+        legal_str='LT 5 BLK 66 PB 4 PG 12 INDIAN RIVER CITY, REVISED PLAT OF S 22 T 22 R 35 SUBID 75'
+#         Parcel ID:    22-35-16-MR-00000.0-0078.04
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+#         self.assertEqual(acct, '---') # this one fails because there's a bcpao account only for lot 4 not 5
+
+    def test_bclerk_then_bcpao8(self):
+        legal_str='BLK 750J U 1-205 PART OF NE 1/4 OF NE 1/4 AS DES BELLA VISTA CONDO PHASE I ORB 5595/8053 S 20 T 25 R 36 SUBID 00'
+#         Parcel ID:    22-35-16-MR-00000.0-0078.04
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2537717')
+        
+    def test_bclerk_then_bcpao9(self):
+        legal_str='BLK 7797 U 259 E 150 FT OF N 170 FT OF NE 1/4 CASA VERDE CLUB CONDO PH V ORB 2625/2765 BLDG N S 05 T 25 R 36 SUBID 00'
+#         Parcel ID:    22-35-16-MR-00000.0-0078.04
+        legal=bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+        acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print(acct)
+        self.assertEqual(acct, '2503567')
+
     def test_one(self):
         i=get_bcpaco_item('2724389')
         pprint.pprint(i)
@@ -81,7 +167,7 @@ class TestUM(unittest.TestCase):
         self.assertEqual(i['year built'] , '1951')
         # self.assertEqual(i['sq feet'] , '1,256')
         self.assertEqual(i['total base area'] , '1,272')
-        
+
     def test_2613083(self):
         i=get_bcpaco_item('2613083')
         pprint.pprint(i)
@@ -92,7 +178,7 @@ class TestUM(unittest.TestCase):
         self.assertEqual(i['year built'] , '1974')
         # self.assertEqual(i['sq feet'] , '1,256')
         self.assertEqual(i['total base area'] , '1,545')
-        
+
 def get_use_code_str(use_code):
     #https://www.bcpao.us/asp/Show_code.asp?numeric=t&table=UseCodes&ValColName=UseCode&DescColName=UseDesc&value=110
     the_map={}
@@ -105,58 +191,99 @@ def get_use_code_str(use_code):
 
 def get_bcpao_query_url_by_acct(acct):
     return 'https://www.bcpao.us/asp/Show_parcel.asp?acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner'
-    
+
 def get_cpao_query_link_by_acct(acct):
     return '<br><a href='+get_bcpao_query_url_by_acct(acct)+'>'+acct+'</a>'
-    
-    
+
+
 def get_acct_by_legal(legal):
-    sub, lot, block, pb, pg = legal
+    sub, lot, block, pb, pg, s, t, r, subid = legal
     sub = sub.replace(u'\xc2', u'').encode('utf-8')
-    print('get_acct_by_legal(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+')')
+    print('get_acct_by_legal(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
     ret=''
-    
+
     url = 'https://www.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
         'Content-Type': 'application/x-www-form-urlencoded'
         }
-    data=None
-    offset=82
-    if pb is not None and pg is not None and lot is not None and block is not None:
-        data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-        offset=86
-    elif sub is not None and pg is not None and lot is not None and block is not None:
-        data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-    elif pb is not None and pg is not None and lot is not None:
-        data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-        offset=86
-    elif pg is not None:
-        data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-    # r = requests.post(url, data, stream=True)
-    r = requests.post(url, headers=headers, data=data)
-    # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-    # print(the_url)
-    soup = BeautifulSoup(r.text.encode('utf-8'), 'html.parser')
-    # print_headers(the_url, 'html.parser')
-    rers_cell = soup.find(text="Real Estate Records Search")
-    # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
-    # print_headers(soup, 'Real Estate Records Search')
-    if rers_cell is not None:
-        # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
-    # print(bi_cell.parent.parent.parent.parent)
-    # # print(list(bi_cell.parent.parent.parent.parent.descendants))
-    # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
-        # try:
-            # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
-        # except:
-            # pass
-        # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
-        ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
-    
+    if not ret:
+        data=None
+        offset=82
+        if pb is not None and pg is not None and lot is not None and block is not None:
+            data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+            offset=86
+        elif sub is not None and pg is not None and lot is not None and block is not None:
+            data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        elif pb is not None and pg is not None and lot is not None:
+            data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+            offset=86
+        elif pg is not None:
+            data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # r = requests.post(url, data, stream=True)
+        req = requests.post(url, headers=headers, data=data)
+        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # print(the_url)
+        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+        # print_headers(the_url, 'html.parser')
+        rers_cell = soup.find(text="Real Estate Records Search")
+        # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+        # print_headers(soup, 'Real Estate Records Search')
+        if rers_cell is not None:
+            # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
+        # print(bi_cell.parent.parent.parent.parent)
+        # # print(list(bi_cell.parent.parent.parent.parent.descendants))
+        # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
+            # try:
+                # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
+            # except:
+                # pass
+            # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
+            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
+
+    if not ret:
+        print('trying condo')
+        
+        data=None
+        offset=82
+        if block and block.endswith('S'):
+            block = block[:-1]+'.S'
+        elif block and block.endswith('F'):
+            block = block[:-1]+'.F'
+        elif block and block.endswith('J'):
+            block = block[:-1]+'.J'
+        elif block and block.endswith('L'):
+            block = block[:-1]+'.L'
+        if lot and len(lot) == 4:
+            print('lot is length 4')
+            lot = lot[0:2]+'.'+lot[2:4]
+        if block and len(block) == 4:
+            print('block is length 4')
+            block = block[0:3]+'.'+block[3:4]
+        blk_str=''
+        if block:
+            blk_str = block
+        lot_str=''
+        if lot:
+            lot_str = lot
+        data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+str(subid)+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        req = requests.post(url, headers=headers, data=data)
+        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        print(data)
+        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+#         print(soup.prettify())
+#         print_headers(the_url, 'html.parser')
+        rers_cell = soup.find(text="Real Estate Records Search")
+        #print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+        if rers_cell is not None:
+            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
+            
+    if not ret:
+        print('no bcpao acct, no address')
+
     return ret
-    
+
 def get_acct_by_name(name):
     print("get_acct_by_name('"+name+"')")
     url = 'https://www.bcpao.us/asp/find_property.asp'
@@ -172,7 +299,7 @@ def get_acct_by_name(name):
     # r = requests.post(url, data, stream=True)
     r = requests.post(url, headers=headers, data=data)
     # print(r.text.encode('utf-8'))
-    
+
     class MyHTMLParser(HTMLParser):
         def handle_starttag(self, tag, attrs):
             # print('handle_starttag: '+tag)
@@ -182,7 +309,7 @@ def get_acct_by_name(name):
             if 'table' in tag and len(self.tables) < self.limit_tables:
                 self.current_table = {}
                 self.table_count +=1
-                
+
             # elif 'th' in tag:
                 # self.current_table['headers'].append(tag)
         def handle_endtag(self, tag):
@@ -218,7 +345,7 @@ def get_acct_by_name(name):
                         self.current_row['f']=data
                     elif self.td_count == 6:
                         self.current_row['g']=data
-    
+
     parser = MyHTMLParser()
     parser.limit_tables = 2
     parser.limit = 5
@@ -241,13 +368,13 @@ def get_acct_by_name(name):
             return r['e']
         except:
             pass
-    
+
 def print_small_texts(the_list,max2=20):
     for index, item in enumerate(the_list):
         # print('the_list['+str(index)+']: ' + item.encode('utf-8'))
         if len(item.encode('utf-8').strip()) > 0 and len(item.encode('utf-8')) < max2:
             print('the_list['+str(index)+']: ' + item.encode('utf-8'))
-            
+
 def get_bcpaco_item(acct):
     print("get_bcpaco_item('"+acct+"')")
     # don't do anything if acct is blank (same in bcpao_radius
@@ -262,7 +389,7 @@ def get_bcpaco_item(acct):
         # }
     # data='acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
     # r = requests.post(url, headers=headers, data=data)
-    
+
     # with closing(urlopen("https://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address')) as f:
         # document = html5lib.parse(f, encoding=f.info().getparam("charset"))
         # print(document)
@@ -270,8 +397,8 @@ def get_bcpaco_item(acct):
     # print(str(r.text.encode('utf-8'))[8000:9000])
     # print(str(r.text))
     the_url="https://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
-    
-    
+
+
     try:
         soup = BeautifulSoup(urlopen(the_url))
         # print(soup.prettify())
@@ -288,7 +415,7 @@ def get_bcpaco_item(acct):
             ret['zip_code']=ret['address'][-5:]
     except:
         raise
-        
+
     try:
         with closing(urlopen(the_url)) as f:
             html = f.read().replace(u'\xa0', u'').encode('utf-8')
@@ -319,7 +446,7 @@ def get_bcpaco_item(acct):
                     # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
                 ret['latest market value total']=str(list(vs_cell.parent.parent.parent.parent.descendants)[35])
             # ret['zip_code']=ret['address'][-5:]
-            
+
             bi_cell = soup.find(text="Building Information")
             # print(bi_cell)
             if bi_cell is not None:
@@ -328,7 +455,7 @@ def get_bcpaco_item(acct):
                 ret['use code']=dict(use_code=use_code, use_code_str=get_use_code_str(use_code))
                 ret['year built']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[56])
                 ret['frame code']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[65])
-                
+
             bai_cell = soup.find(text="Building Area Information")
             if bai_cell is not None:
                 # print_small_texts(list(bai_cell.parent.parent.parent.parent.parent.descendants))
@@ -337,7 +464,7 @@ def get_bcpaco_item(acct):
         raise
 
     # print(ret)
-    
+
     try:
         if 'latest market value total' not in ret:
             with closing(urlopen(the_url)) as f:
@@ -347,7 +474,7 @@ def get_bcpaco_item(acct):
                     # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
                 if mvt:
                     ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
-                    
+
         if 'latest market value total' not in ret:
             with closing(urlopen(the_url)) as f:
                 html = f.read().replace(u'\xa0', u'').encode('utf-8')
@@ -395,7 +522,7 @@ def get_bcpaco_item(acct):
                         # print('list(pi.parent.parent.descendants)['+str(index)+']: '+str(item))
                 # if mvt:
                     # ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
-                    
+
             class MyHTMLParser(HTMLParser):
                 def handle_starttag(self, tag, attrs):
                     print('handle_starttag: ' + tag)
@@ -412,7 +539,7 @@ def get_bcpaco_item(acct):
                     if self.in_mvt and '\\n' not in data:
                         self.mvt = data
                         print('handle_data: ' + data)
-            
+
             parser = MyHTMLParser()
             parser.limit_tables = 20
             parser.limit = 5000
@@ -438,7 +565,7 @@ def get_bcpaco_item(acct):
             # ret['latest market value total']=parser.mvt
     except:
         raise#print('123 ex: '+str(e))
-        
+
     try:
         # year built - Condo Unit Detail
         soup = BeautifulSoup(urlopen(the_url), 'html.parser')
@@ -449,14 +576,14 @@ def get_bcpaco_item(acct):
                 # if str(item).startswith('1,173'):
                     # break
             ret['year built']=list(bi_cell.parent.parent.parent.parent.parent.descendants)[56]
-            
+
             bai_cell = soup.find(text="Building Area Information")
             # for index, item in enumerate(list(bai_cell.parent.parent.parent.parent.parent.descendants)):
                 # print('list(fc_cell.parent.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item))
                 # if str(item).startswith('1,173'):
                     # break
             ret['total base area']=list(bai_cell.parent.parent.parent.parent.parent.descendants)[59]
-            
+
         cud_cell = soup.find(text="Condo Unit Detail")
         if cud_cell is not None:
             # for index, item in enumerate(list(cud_cell.parent.parent.parent.parent.parent.descendants)):
@@ -466,11 +593,11 @@ def get_bcpaco_item(acct):
                     # break
             ret['year built']=list(cud_cell.parent.parent.parent.parent.parent.descendants)[198].encode('utf-8')
             ret['sq feet']=list(cud_cell.parent.parent.parent.parent.parent.descendants)[112].encode('utf-8')
-            
+
     except Exception as e:
         str(e)
         raise#print('345 ex: '+str(e))
-        
+
     try:
         # print_headers2(the_url)
         # the_html=urlopen(the_url)
@@ -490,7 +617,7 @@ def get_bcpaco_item(acct):
             ret['frame code']=list(bi_cell.parent.parent.parent.parent.parent.descendants)[65].encode('utf-8')
     except:
         raise#print('sdf ex: '+str(e))
-        
+
     # try:
         # bai_cell = soup.find(text="Building Area Information")
         # # print(list(fc_cell.parent.parent.parent.parent.parent.descendants))
@@ -499,13 +626,13 @@ def get_bcpaco_item(acct):
         # ret['total base area']=list(bai_cell.parent.parent.parent.parent.parent.descendants)[95].encode('utf-8')
     # except:
         # pass#print('sdf ex: '+str(e))
-    
+
     manuf_codes=['212','213','214']
     if 'use code' in ret and ret['use code']['use_code'] in manuf_codes:
         ret['manuf']=True
-    
+
     return ret
-                
+
 def get_acct(number, street, type2):
     print('get_acct('+number+', '+street+', '+type2+')')
     url = 'https://www.bcpao.us/asp/find_property.asp'
@@ -524,7 +651,7 @@ def get_acct(number, street, type2):
     # r = requests.post(url, data, stream=True)
     r = requests.post(url, headers=headers, data=data)
     # print(r.text.encode('utf-8'))
-    
+
     class MyHTMLParser(HTMLParser):
         def handle_starttag(self, tag, attrs):
             # print('handle_starttag: '+tag)
@@ -534,7 +661,7 @@ def get_acct(number, street, type2):
             if 'table' in tag and len(self.tables) < self.limit_tables:
                 self.current_table = {}
                 self.table_count +=1
-                
+
             # elif 'th' in tag:
                 # self.current_table['headers'].append(tag)
         def handle_endtag(self, tag):
@@ -570,7 +697,7 @@ def get_acct(number, street, type2):
                         self.current_row['f']=data
                     elif self.td_count == 6:
                         self.current_row['g']=data
-    
+
     parser = MyHTMLParser()
     parser.limit_tables = 2
     parser.limit = 5
@@ -593,8 +720,8 @@ def get_acct(number, street, type2):
         except:
             pass
     print('')
-    
-    
+
+
 def print_headers(the_url, parser_name=None):
     # print('print_headers(the_html, '+parser_name+')')
     soup=None
@@ -604,7 +731,7 @@ def print_headers(the_url, parser_name=None):
     else:
         print('print_headers(the_url, '+parser_name+')')
         soup = BeautifulSoup(urlopen(the_url), parser_name)
-    
+
     texts=[]
     texts.append("BCPAO - Property Details")
     texts.append("New Search")
@@ -630,14 +757,14 @@ def print_headers(the_url, parser_name=None):
     texts.append("Extra Feature Information")
     texts.append("Sale Date")
     texts.append("Acres")
-    
-    
-    
-    
+
+
+
+
     # print(texts)
     for t in texts:
         print(t.ljust(28)+': '+str(soup.find(text=t)))
-                
+
 def main():
     # Year Built, Frame Code, Total Base Area
     # get_acct('1122', 'cheyenne', 'DR')
@@ -645,7 +772,7 @@ def main():
     # get_acct('2600', 'fields', 'AVE')
     # get_acct('331', 'royal ', 'ST')
     # get_acct('145', 'sanderling', '')
-    
+
     # data = [
         # {'number':'1122', 'street':'cheyenne', 'type':'DR'},
         # {'number':'1305', 'street':'tradition', 'type':'CIR'},
@@ -653,10 +780,10 @@ def main():
         # {'number':'331', 'street':'royal', 'type':'ST'},
         # {'number':'145', 'street':'sanderling', 'type':''}
         # ]
-    
+
     # for d in data:
         # print(get_bcpaco_item(get_acct(d['number'], d['street'], d['type
-        
+
     # get_bcpaco_item(get_acct_by_name('perez, rolando'))
     names=[]
     # names.append('MCINTOSH-WILLIAMS, GRETA') #house
@@ -665,7 +792,7 @@ def main():
     for name in names:
         acct=get_acct_by_name(name)
         pprint.pprint(get_bcpaco_item(acct))
-    
+
     legals=[]
     # legals.append(('BRYAN HELLER ESTATES', 2, 3)) #LT 2 BLK 3 PB 10 PG 89 BRYAN HELLER ESTATES SUBD S 34 T 21 R 35 SUBID 51
     # names.append('FINNEY, ERNEST')
@@ -674,17 +801,17 @@ def main():
         acct=get_acct_by_legal(legal)
         if acct:
             pprint.pprint(get_bcpaco_item(acct))
-    # pprint.pprint(get_bcpaco_item('2630481')) # FINNEY, ERNEST  7667 N WICKHAM RD 1009, MELBOURNE 32940 
-    # pprint.pprint(get_bcpaco_item('2613083')) #MORGAN, MICHAEL JAMES TRUSTEE  320 LEE AVE , SATELLITE BEACH 32937 
-    pprint.pprint(get_bcpaco_item('2807458')) 
-    pprint.pprint(get_bcpaco_item('2630481')) 
+    # pprint.pprint(get_bcpaco_item('2630481')) # FINNEY, ERNEST  7667 N WICKHAM RD 1009, MELBOURNE 32940
+    # pprint.pprint(get_bcpaco_item('2613083')) #MORGAN, MICHAEL JAMES TRUSTEE  320 LEE AVE , SATELLITE BEACH 32937
+    pprint.pprint(get_bcpaco_item('2807458'))
+    pprint.pprint(get_bcpaco_item('2630481'))
     # get_bcpaco_item('2613083')
     # # get_bcpaco_item('2630481')
     # print(get_cpao_query_link_by_acct(acct))
-    
+
 
     # print('done')
-    
+
 if __name__ == '__main__':
     # sys.exit(main())
     unittest.main()
