@@ -94,7 +94,7 @@ class TestUM(unittest.TestCase):
         acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
         print(acct)
         self.assertEqual(acct, '2864518')
-        
+
     def test_bclerk_then_bcpao4(self):
         legal_str='LT 1928 PB 10 PG 21 U 401 WINSLOW RESERVE SUBD THE MERIDIAN, A CONDOMINIUM PH I ORB 5782/5772 S 26 T 24 R 37 SUBID 27'
         legal=bclerk.get_legal_from_str(legal_str)
@@ -120,7 +120,7 @@ class TestUM(unittest.TestCase):
         acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
         print(acct)
         self.assertEqual(acct, '2441816')
-        
+
     def test_bclerk_then_bcpao6(self):
         legal_str='LT 7804 PB 29 PG 71 U 3 LA CITA SECTION 5 SWEET MAGNOLIA CONDO ORB 2732/2040 S 16 T 22 R 35 SUBID MR'
 #         Parcel ID:    22-35-16-MR-00000.0-0078.04
@@ -129,7 +129,7 @@ class TestUM(unittest.TestCase):
         acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
         print(acct)
         self.assertEqual(acct, '2207771')
-        
+
     def test_bclerk_then_bcpao7(self):
         legal_str='LT 5 BLK 66 PB 4 PG 12 INDIAN RIVER CITY, REVISED PLAT OF S 22 T 22 R 35 SUBID 75'
 #         Parcel ID:    22-35-16-MR-00000.0-0078.04
@@ -147,7 +147,7 @@ class TestUM(unittest.TestCase):
         acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
         print(acct)
         self.assertEqual(acct, '2537717')
-        
+
     def test_bclerk_then_bcpao9(self):
         legal_str='BLK 7797 U 259 E 150 FT OF N 170 FT OF NE 1/4 CASA VERDE CLUB CONDO PH V ORB 2625/2765 BLDG N S 05 T 25 R 36 SUBID 00'
 #         Parcel ID:    22-35-16-MR-00000.0-0078.04
@@ -156,6 +156,30 @@ class TestUM(unittest.TestCase):
         acct=str(get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
         print(acct)
         self.assertEqual(acct, '2503567')
+
+
+    def assertAcctFromLegal(self, legal_str, expectedAcct):
+        legal = bclerk.get_legal_from_str(legal_str)
+        print 'legal=' + str(legal)
+        acct = str(get_acct_by_legal((legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])))
+        print acct
+        self.assertEqual(acct, expectedAcct)
+
+    def test_bclerk_then_bcpao10(self):
+        self.assertAcctFromLegal('LT 14 BLK 3 PB 19 PG 58 MARLIN SUBD S 05 T 25 R 36 SUBID 52', '2504233')
+    def test_bclerk_then_bcpao11(self):
+        #self.assertAcctFromLegal('LT 16 BLK D PB 44 PG 23 VIERA CENTRAL PUD TRACT 12 UNIT 1 PARCELS 1-3, PHASE 2B S 16 T 26 R 36 SUBID RF', '---')
+        #self.assertAcctFromLegal('LT 6 PB 1 PG 164 FLORIDA INDIAN RIVER LAND CO PARCEL 1 FROM S QUARTER CNR BEING INTERSEC OF CENLN OF ST RD 9 S 33 T 28 R 37', '---')
+        #self.assertAcctFromLegal('LT 710 BLK 48 PB 3 PG 7 U 10C2 AVON BY THE SEA OCEAN PARK CONDO NORTH ORB 2024/745 S 23 T 24 R 37 SUBID CG', '---') # LT 7.10
+        #self.assertAcctFromLegal('LT 36 PB 26 PG 103 INDUSTRIAL PLAZA UNIT 1 TRACT C COMM @ INTERSEC OF N R/W OF ELLIS RD & CENTERLN OF E DR S 26 T 27 R 36 SUBID 75', '---')
+        self.assertAcctFromLegal('LT 95 PB 48 PG 69 EAGLE LAKE EAST PHASE 1 S 15 T 28 R 37 SUBID 81', '2859710')
+        #self.assertAcctFromLegal('LT 3 BLK G PB 10 PG 22 GOLF PARK SUBD S 20 FT S 04 T 28 R 37 SUBID 51', '---')
+        self.assertAcctFromLegal('LT 14 BLK 3 PB 19 PG 58 MARLIN SUBD S 05 T 25 R 36 SUBID 52', '2504233')
+#         self.assertAcctFromLegal('LT 6 PB 1 PG 164 FLORIDA INDIAN RIVER LAND CO PARCEL 1 FROM S QUARTER CNR BEING INTERSEC OF CENLN OF ST RD 9 S 33 T 28 R 37', '---')
+        self.assertAcctFromLegal('BLK 20U U A21 N 227.29 FT OF E 128 FT OF W 778 TREASURE COAST HARBOUR VILLAS CONDO ORB 5741/5541 S 31 T 24 R 37 SUBID 00', '2461077')
+
+    def test_bclerk_then_bcpao12(self):
+        self.assertAcctFromLegal('LT 14 BLK 180 PB 23 PG 53 PORT ST JOHN UNIT 6 COMM @ NW CNR S 21 T 23 R 35 SUBID JX', '2322639') # not 2306233 !!!
 
     def test_one(self):
         i=get_bcpaco_item('2724389')
@@ -211,14 +235,14 @@ def get_acct_by_legal(legal):
     if not ret:
         data=None
         offset=82
-        if pb is not None and pg is not None and lot is not None and block is not None:
-            data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-            offset=86
-        elif sub is not None and pg is not None and lot is not None and block is not None:
+#         if pb is not None and pg is not None and lot is not None and block is not None:
+#             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#             offset=86
+        if sub is not None and pg is not None and lot is not None and block is not None:
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-        elif pb is not None and pg is not None and lot is not None:
-            data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-            offset=86
+#         elif pb is not None and pg is not None and lot is not None:
+#             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#             offset=86
         elif pg is not None:
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
@@ -228,6 +252,14 @@ def get_acct_by_legal(legal):
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
         # print_headers(the_url, 'html.parser')
         rers_cell = soup.find(text="Real Estate Records Search")
+
+#         for a in soup.find_all('a'):
+#             pprint.pprint(a)
+        aerials = soup.find_all('a', text="Aerial")
+        if aerials and len(aerials) > 1:
+            # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
+            print('ignoring this whole page because we have more than one result (tax ids)')
+            rers_cell = None
         # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
         # print_headers(soup, 'Real Estate Records Search')
         if rers_cell is not None:
@@ -244,7 +276,7 @@ def get_acct_by_legal(legal):
 
     if not ret:
         print('trying condo')
-        
+
         data=None
         offset=82
         if block and block.endswith('S'):
@@ -255,10 +287,12 @@ def get_acct_by_legal(legal):
             block = block[:-1]+'.J'
         elif block and block.endswith('L'):
             block = block[:-1]+'.L'
-        if lot and len(lot) == 4:
+        elif block and block.endswith('U'):
+            block = block[:-1]+'.U'
+        if lot and len(lot) == 4 and '.' not in lot:
             print('lot is length 4')
             lot = lot[0:2]+'.'+lot[2:4]
-        if block and len(block) == 4:
+        if block and len(block) == 4 and '.' not in block:
             print('block is length 4')
             block = block[0:3]+'.'+block[3:4]
         blk_str=''
@@ -278,7 +312,7 @@ def get_acct_by_legal(legal):
         #print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
         if rers_cell is not None:
             ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
-            
+
     if not ret:
         print('no bcpao acct, no address')
 

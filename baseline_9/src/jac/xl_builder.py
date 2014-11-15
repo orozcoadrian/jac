@@ -53,11 +53,20 @@ class MainSheetBuilder(object):
         headers.append(jac.xl3.Cell.from_display("count"))
         headers.append(jac.xl3.Cell.from_display("address", width=10000))
         headers.append(jac.xl3.Cell.from_display("zip"))
-        headers.append(jac.xl3.Cell.from_display("latest_amount_due", width=4000))
         headers.append(jac.xl3.Cell.from_link("liens-case", 'http://web1.brevardclerk.us/oncoreweb/search.aspx', width=5000))
         headers.append(jac.xl3.Cell.from_link("liens-name", 'http://web1.brevardclerk.us/oncoreweb/search.aspx', width=5000))
+#         headers.append(jac.xl3.Cell.from_display("legal"))
+#         headers.append(jac.xl3.Cell.from_display("Pb", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Pg", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Twp", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Rng", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Sec", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Sub", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Blk", width=1500))
+#         headers.append(jac.xl3.Cell.from_display("Lot", width=1500))
         headers.append(jac.xl3.Cell.from_link("bcpao", 'https://www.bcpao.us/asp/real_search.asp'))
         headers.append(jac.xl3.Cell.from_display("frame code"))
+        headers.append(jac.xl3.Cell.from_display("latest_amount_due", width=4000))
         headers.append(jac.xl3.Cell.from_display("latest market value total"))
         headers.append(jac.xl3.Cell.from_display("total base area"))
         headers.append(jac.xl3.Cell.from_display("year built"))
@@ -141,6 +150,51 @@ class MainSheetBuilder(object):
                 if r.get_name_combos() is not None and len(r.get_name_combos()) > 0:
                     value_to_use = jac.xl3.Cell.from_link(r.get_name_combos()[0], self.get_bclerk_name_url(r.get_name_combos()[0]))
                 row.append(value_to_use)
+            if 'legal' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'legal_description' in i['legal']:
+                    the_str = i['legal']['legal_description']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Pb' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'pb' in i['legal']:
+                    the_str = i['legal']['pb']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Pg' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'pg' in i['legal']:
+                    the_str = i['legal']['pg']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Twp' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 't' in i['legal']:
+                    the_str = i['legal']['t']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Rng' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'r' in i['legal']:
+                    the_str = i['legal']['r']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Sec' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 's' in i['legal']:
+                    the_str = i['legal']['s']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Sub' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'subid' in i['legal']:
+                    the_str = i['legal']['subid']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Lot' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'lt' in i['legal']:
+                    the_str = i['legal']['lt']
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'Blk' in h.get_display():
+                the_str = ''
+                if 'legal' in i and 'blk' in i['legal']:
+                    the_str = i['legal']['blk']
+                row.append(jac.xl3.Cell.from_display(the_str))
             if 'bcpao' in h.get_display():
                 bcpao_acc_str = None
                 if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:

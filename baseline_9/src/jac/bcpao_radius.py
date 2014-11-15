@@ -29,11 +29,7 @@ class TestUM(unittest.TestCase):
         pprint.pprint(i)
         
 
-def print_small_texts(the_list,max2=20):
-    for index, item in enumerate(the_list):
-        # print('the_list['+str(index)+']: ' + item.encode('utf-8'))
-        if len(item.encode('utf-8').strip()) > 0 and len(item.encode('utf-8')) < max2:
-            print('the_list['+str(index)+']: ' + item.encode('utf-8'))
+
             
 def get_nearby_table(the_url):
     # print('get_nearby_table(%s)'%the_url)

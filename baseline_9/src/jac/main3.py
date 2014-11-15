@@ -63,12 +63,16 @@ def main3():
     dates = mydate.get_next_dates(date.today())
     print(dates)
     dates_to_add = dates#[0:2]
+    if args.dates:
+        dates_to_add = [datetime.datetime.strptime(x, '%m/%d/%Y') for x in args.dates]
     date_strings_to_add = [x.strftime("%m/%d/%Y") for x in dates_to_add]
 
     #date_strings_to_add2 = [x.strftime("%A %b %d") for x in dates_to_add]
     #date_strings_to_add2.extend(args.dates)
+    
     short_date_strings_to_add = [x.strftime("%m.%d") for x in dates_to_add]
-    abc = '-'.join([short_date_strings_to_add[0], short_date_strings_to_add[1]])
+    print('short_date_strings_to_add: ' + str(short_date_strings_to_add))
+    abc = '-'.join(short_date_strings_to_add[0:1])
 
     parent_out_dir = 'outputs'
     out_dir = parent_out_dir+'/'+timestamp
@@ -92,6 +96,9 @@ def main3():
 
 
     datasets = []
+    print('date_strings_to_add: ' + str(date_strings_to_add))
+    print('abc: ' + abc)
+#     return
     datasets.extend([get_mainsheet_dataset(args, fnum, mrs, out_dir, date_str) for date_str in date_strings_to_add])
     #datasets.append(get_mainsheet_dataset(args, fnum, mrs, out_dir, '02/18/2015'))
     #datasets.append(get_mainsheet_dataset(args, fnum, mrs, out_dir, '02/19/2015'))
@@ -105,7 +112,7 @@ def main3():
         os.system('start "" "C:/Program Files/Microsoft Office/Office12/Excel.exe" /e '+out_file)
 
 
-    print(abc)
+    
     body = 'this result is for: ' + abc
     body += '<br>total records: ' + str(len(mrs.get_records()))
 
