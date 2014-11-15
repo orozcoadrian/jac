@@ -47,13 +47,12 @@ class MainSheetBuilder(object):
         headers.append(jac.xl3.Cell.from_display("win", width=3000))
         headers.append(jac.xl3.Cell.from_link("case_number", 'http://vweb2.brevardclerk.us/Foreclosures/foreclosure_sales.html', width=5000))
         headers.append(jac.xl3.Cell.from_display("case_title", width=10000))
-        headers.append(jac.xl3.Cell.from_display("foreclosure_sale_date", width=3000))
+        headers.append(jac.xl3.Cell.from_display("fc._sale_date", width=3000))
         headers.append(jac.xl3.Cell.from_link("case_info", 'https://vweb1.brevardclerk.us/facts/caseno.cfm'))
         headers.append(jac.xl3.Cell.from_link("reg_actions", 'https://vweb1.brevardclerk.us/facts/caseno.cfm'))
         headers.append(jac.xl3.Cell.from_display("count"))
         headers.append(jac.xl3.Cell.from_display("address", width=10000))
         headers.append(jac.xl3.Cell.from_display("zip"))
-        headers.append(jac.xl3.Cell.from_link("liens-case", 'http://web1.brevardclerk.us/oncoreweb/search.aspx', width=5000))
         headers.append(jac.xl3.Cell.from_link("liens-name", 'http://web1.brevardclerk.us/oncoreweb/search.aspx', width=5000))
 #         headers.append(jac.xl3.Cell.from_display("legal"))
 #         headers.append(jac.xl3.Cell.from_display("Pb", width=1500))
@@ -65,10 +64,10 @@ class MainSheetBuilder(object):
 #         headers.append(jac.xl3.Cell.from_display("Blk", width=1500))
 #         headers.append(jac.xl3.Cell.from_display("Lot", width=1500))
         headers.append(jac.xl3.Cell.from_link("bcpao", 'https://www.bcpao.us/asp/real_search.asp'))
-        headers.append(jac.xl3.Cell.from_display("frame code"))
-        headers.append(jac.xl3.Cell.from_display("latest_amount_due", width=4000))
-        headers.append(jac.xl3.Cell.from_display("latest market value total"))
-        headers.append(jac.xl3.Cell.from_display("total base area"))
+        headers.append(jac.xl3.Cell.from_display("f_code"))
+        headers.append(jac.xl3.Cell.from_display("owed", width=4000))
+        headers.append(jac.xl3.Cell.from_display("assessed"))
+        headers.append(jac.xl3.Cell.from_display("base_area"))
         headers.append(jac.xl3.Cell.from_display("year built"))
         headers.append(jac.xl3.Cell.from_display("owed - ass"))
         return headers
@@ -87,10 +86,10 @@ class MainSheetBuilder(object):
             if 'win' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(''))
             if 'case_number' in h.get_display():
-                row.append(jac.xl3.Cell.from_display(self.get_display_case_number(i['case_number'])))
+                row.append(jac.xl3.Cell.from_link(self.get_display_case_number(i['case_number']), self.get_case_number_url(i['case_number'])))
             if 'case_title' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(i['case_title']))
-            if 'foreclosure_sale_date' in h.get_display():
+            if 'fc._sale_date' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(i['foreclosure_sale_date']))
             if 'count' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(i['count']))
@@ -105,7 +104,7 @@ class MainSheetBuilder(object):
                 if zip_str:
                     value_to_use = jac.xl3.Cell.from_display(int(zip_str))
                 row.append(value_to_use)
-            if 'latest_amount_due' in h.get_display():
+            if 'owed' == h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if 'latest_amount_due' in i:
                     a_str = i['latest_amount_due'].replace('$', '').replace(',', '')
@@ -143,8 +142,6 @@ class MainSheetBuilder(object):
                 # row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
                 row.append(jac.xl3.Cell.from_link('link', link_str))
-            if 'liens-case' in h.get_display():
-                row.append(jac.xl3.Cell.from_link(self.get_display_case_number(i['case_number']), self.get_case_number_url(i['case_number'])))
             if 'liens-name' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if r.get_name_combos() is not None and len(r.get_name_combos()) > 0:
@@ -203,12 +200,12 @@ class MainSheetBuilder(object):
                     row.append(jac.xl3.Cell.from_display(''))
                 else:
                     row.append(jac.xl3.Cell.from_link(bcpao_acc_str, jac.bcpao.get_bcpao_query_url_by_acct(bcpao_acc_str)))
-            if 'frame code' in h.get_display():
+            if 'f_code' in h.get_display():
                 fc_str = ''
                 if 'bcpao_item' in i and 'frame code' in i['bcpao_item']:
                     fc_str = i['bcpao_item']['frame code']
                 row.append(jac.xl3.Cell.from_display(fc_str))
-            if 'latest market value total' in h.get_display():
+            if 'assessed' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 a_str = self.try_get(i, 'bcpao_item', 'latest market value total').replace('$', '').replace(',', '')
                 if a_str:
@@ -217,7 +214,7 @@ class MainSheetBuilder(object):
                     except:
                         value_to_use = jac.xl3.Cell.from_display(a_str)
                 row.append(value_to_use)
-            if 'total base area' in h.get_display():
+            if 'base_area' in h.get_display():
                 the_str = ''
                 if 'bcpao_item' in i and 'total base area' in i['bcpao_item']:
                     the_str = float(i['bcpao_item']['total base area'].replace(',', ''))
@@ -232,7 +229,7 @@ class MainSheetBuilder(object):
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)
-                owed_column = 'K' # latest_amount_due
+                owed_column = 'O' # latest_amount_due
                 ass_column = 'P' # latest market value total
                 f_str = 'IF(AND(NOT(ISBLANK('+owed_column + row_str + ')),NOT(ISBLANK('+ass_column + row_str + '))),'+owed_column + row_str + '-'+ass_column + row_str + ',"")'
                 row.append(jac.xl3.Cell.from_formula(f_str))
@@ -355,26 +352,3 @@ class CheapSheetBuilder(MainSheetBuilder):
                 print('ignoring exception(asodkfj09823)' + str(e))
         # pprint.pprint(ret)
         return ret
-class RadiusSheetBuilder(MainSheetBuilder):
-    def get_name(self):
-        return 'RadiusSheetBuilder'
-    def get_sheet_name(self):
-        return 'radius'
-    def get_headers(self):
-        headers = []
-        headers.extend(super(RadiusSheetBuilder, self).get_headers())
-        del headers[0:2]
-        # headers.append(jac.xl3.Cell.from_display("Classic Map"))
-        self.column_handlers['Classic Map'].handle_add(headers)
-        self.column_handlers['avg 250'].handle_add(headers)
-        self.column_handlers['avg 500'].handle_add(headers)
-        self.column_handlers['avg 750'].handle_add(headers)
-        self.column_handlers['avg 1000'].handle_add(headers)
-        return headers
-    def add_to_row(self, row, i, row_index):
-        super(RadiusSheetBuilder, self).add_to_row(row, i, row_index)
-        self.column_handlers['Classic Map'].handle_add_to_row(row, i)
-        self.column_handlers['avg 250'].handle_add_to_row(row, i)
-        self.column_handlers['avg 500'].handle_add_to_row(row, i)
-        self.column_handlers['avg 750'].handle_add_to_row(row, i)
-        self.column_handlers['avg 1000'].handle_add_to_row(row, i)

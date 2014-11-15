@@ -19,7 +19,7 @@ class Test(unittest.TestCase):
         self.assertEqual('http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=the_url&bt=OR&d=5%2F31%2F2014&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES',instance.get_bclerk_name_url("the_url"))
         self.assertEqual(None,instance.get_items_to_use(None))
         headers=instance.get_headers()
-        self.assertEqual(19, len(headers))
+        self.assertEqual(18, len(headers))
         self.assertEqual('cn-',instance.get_display_case_number('cn-XXXX-XX'))
 
     def test_add_to_row(self):
@@ -34,31 +34,16 @@ class Test(unittest.TestCase):
         instance.add_to_row(test_row, r, 0)
         #print(test_row)
 
-    def test_RadiusSheetBuilder(self):
-        instance = jac.xl_builder.RadiusSheetBuilder()
-        self.assertEqual('RadiusSheetBuilder',instance.get_name())
-        headers=instance.get_headers()
-        header_strings = [cell.get_display() for cell in headers]
-        #self.assertEqual(24, len(headers))
-        self.assertEqual(['case_number', 'case_title', 'foreclosure_sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest_amount_due', 'latest market value total', 'total base area', 'year built', 'owed - ass',  'Classic Map',  'avg 250',  'avg 500',  'avg 750',  'avg 1000'], header_strings, header_strings)
-        test_row=[]
-        test_item={}
-        test_item['case_number']='cn'
-        test_item['case_title']='ct'
-        test_item['foreclosure_sale_date']='fsd'
-        test_item['count']='c'
-        r=jac.record.MyRecord.MyRecord(test_item)
-        instance.add_to_row(test_row, r, 0)
-        #print(test_row)
+
 
     def test_MainSheetBuilder(self):
         instance = jac.xl_builder.MainSheetBuilder()
         self.assertEqual('MainSheetBuilder',instance.get_name())
         headers=instance.get_headers()
-        self.assertEqual(19, len(headers))
+        self.assertEqual(18, len(headers))
 
         header_strings = [cell.get_display() for cell in headers]
-        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'foreclosure_sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-case', 'liens-name', 'bcpao', 'frame code', 'latest_amount_due', 'latest market value total', 'total base area', 'year built', 'owed - ass'], header_strings)
+        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'fc._sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-name', 'bcpao', 'f_code', 'owed', 'assessed', 'base_area', 'year built', 'owed - ass'], header_strings)
 
     def test_MainSheetBuilder_with_rows(self):
         instance = jac.xl_builder.MainSheetBuilder()
