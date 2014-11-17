@@ -19,7 +19,7 @@ def main():
     r = requests.get(uri)
     print(r.status_code)
     print(r.text)
-    
+
 def do_tax_sheet(date_str):
     maps=[]
 
@@ -42,7 +42,7 @@ def do_tax_sheet(date_str):
     return dataset
 
 def do_tax(date_strs):
-    
+
     datasets = []
     for date_str in date_strs:
         datasets.append(do_tax_sheet(date_str))
@@ -262,6 +262,47 @@ class TaxSheetBuilder(object):
 
         ret = jac.xl3.DataSet(self.get_sheet_name(), rows)
         return ret
+
+
+def get_pay_all_from_tax_text(r_text):
+    ret = None
+#     lines = r_text.split('\n')
+#     for l in lines:
+    # print(l)
+    # if 'AMOUNT DUE' in l:
+#     print(l)
+    # m = re.search('<font color="Blue">(.* VS .*)<', l)
+    # if m:
+    # print(indent+m.group(1))
+    m = re.search('.*Pay All: \$([\d,.]*).*', r_text)
+    if m:
+    # print(m.groups())
+        ret = m.group(1)
+        # print(l)
+        # if '<font color="Blue">' in l:
+        # print(l)
+    return ret
+
+def get_tax_url_from_taxid(tax_id):
+        url = 'https://brevard.county-taxes.com/public/real_estate/parcels/' + tax_id
+        return url
+
+
+def get_tax_text_from_taxid(tax_id):
+    url = get_tax_url_from_taxid(tax_id)
+#         cfid = '1550556'
+#         cftoken = '74317641'
+    headers = '' #get_headers(cfid, cftoken)
+    data = '' #get_data(year, court_type, seq_number)
+    #     r = requests.post(url, data, headers=headers, stream=True)
+    r = requests.post(url, data, headers=headers, stream=True)
+    return r
+
+def get_pay_all_from_taxid(tax_id):
+    r = get_tax_text_from_taxid(tax_id)
+#         print(r.text)
+    pay_all = get_pay_all_from_tax_text(r.text)
+    return pay_all
 
 if __name__ == '__main__':
     sys.exit(main3())

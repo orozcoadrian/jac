@@ -8,6 +8,7 @@ import re
 import urllib
 import jac.columns
 from jac.cfm import cfm
+import jac.tax
 
 class MainSheetBuilder(object):
     '''
@@ -77,6 +78,7 @@ class MainSheetBuilder(object):
 #         headers.append(jac.xl3.Cell.from_display("db-ass"))
 #         headers.append(jac.xl3.Cell.from_display("db-fcode"))
         headers.append(jac.xl3.Cell.from_display("orig_mtg"))
+        headers.append(jac.xl3.Cell.from_display("taxes"))
         return headers
     def get_display_case_number(self, case_number):
         return case_number.replace('XXXX-XX', '')
@@ -295,6 +297,15 @@ class MainSheetBuilder(object):
                         row.append(jac.xl3.Cell.from_link('link', i['orig_mtg_link']))
                     else:
                         row.append(jac.xl3.Cell.from_display(''))
+            if 'taxes' in h.get_display():
+                the_str = None
+                if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
+                    the_str = i['bcpao_acc']
+                if the_str is None:
+                    row.append(jac.xl3.Cell.from_display(''))
+                else:
+                    row.append(jac.xl3.Cell.from_link(jac.tax.get_pay_all_from_taxid(the_str), jac.tax.get_tax_url_from_taxid(the_str)))
+#jac.tax.get_pay_all_from_taxid(tax_id)
     def get_sheet_name(self):
         return self.sheet_name
     def add_sheet(self, items):
