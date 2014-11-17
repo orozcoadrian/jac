@@ -1,6 +1,8 @@
 import itertools
 import requests
 import re
+from bs4 import BeautifulSoup
+import pprint
 
 def get_url():
     return 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm'
@@ -54,51 +56,145 @@ def do(out_dir, year, court_type, seq_number, cfid, cftoken):
 
     return ret
 
+
+def get_lad_from_reg_text(r_text):
+    lad = None
+    lines = r_text.split('\n')
+    for l in lines:
+        # print(l)
+        # if 'AMOUNT DUE' in l:
+        # print(l)
+        # m = re.search('<font color="Blue">(.* VS .*)<', l)
+        # if m:
+        # print(indent+m.group(1))
+        m = re.search('.*AMOUNT DUE: \$([\d,.]*).*', l)
+        if m:
+        # print(m.groups())
+            lad = m.group(1)
+    
+        # print(l)
+        # if '<font color="Blue">' in l:
+        # print(l)
+    return lad
+
 def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
     ret = {}
     #indent = '                                                        '
     id2 = year+'_'+court_type+'_'+seq_number
-    # print(indent+'reg('+id+')')
-    url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm'
-    # cookies = {}
-    # cookies['cfid'] = '1554122'
-    # cookies['cftoken'] = '49155602'
-    # cookies['cfid'] = '1550556'
-    # cookies['cftoken'] = '74317641'
-    # print(indent+str(cookies))
-    headers = {
-        'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        # 'Referer': 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm'
-        }
-    data='RequestTimeout=500'
-    # print('pre asdfasdf')
-    r = requests.post(url, data, headers=headers, stream=True)
-    # print('post asdfasdf')
-    # print(r.text)
-    lines = r.text.split('\n')
-    for l in lines:
-        # print(l)
-        # if 'AMOUNT DUE' in l:
-            # print(l)
-        # m = re.search('<font color="Blue">(.* VS .*)<', l)
-        # if m:
-            # print(indent+m.group(1))
-        m = re.search('.*AMOUNT DUE: \$([\d,.]*).*', l)
-        if m:
-            # print(m.groups())
-            ret['latest_amount_due'] = m.group(1)
-            # print(l)
-        # if '<font color="Blue">' in l:
-            # print(l)
+    r_text = get_reg_actions_text(year, court_type, seq_number)
+    lad = get_lad_from_reg_text(r_text)
+    ret['latest_amount_due'] = lad
+    ret['orig_mtg_link'] = get_orig_mortgage_url_from_rtext(r_text)
 
     if out_dir:
         with open(out_dir+'/'+id2+'_reg_actions.htm', 'wb') as handle:
-            for block in r.iter_content(1024):
-                if not block:
-                    break
-                if 'You were brought to this page because search information has not been provided' in str(block):
-                    print('no data')
-                handle.write(block)
+            handle.write(r_text)
                 # print(block)
+    return ret
+
+
+def get_reg_actions_dataset(r_text):
+    soup = BeautifulSoup(r_text.encode('utf-8'))
+#     print soup.prettify()
+#     print('case number: ' + soup.title.text)
+#     print('case title: ' + soup.find_all('font', color='Blue')[0].text)
+    ret = {}
+    ret['case number'] = soup.title.text
+    ret['case title'] = soup.find_all('font', color='Blue')[0].text
+#     print(soup.find_all('table')[1].find_all('tr'))
+    items = []
+    col_names = []
+    trs = soup.find_all('table')[1].findAll("tr")
+    for row, a in enumerate(trs):
+#         print 'r' + str(r) + '===' + str(a).replace("\n", "").replace("\r", "").replace("\t", "")
+        current_item = {}
+        for h_index, h_text in enumerate(a.findAll("th")):
+#             print ' h_index' + str(h_index) + '===' + str(h_text).replace("\n", "").replace("\r", "").replace("\t", "")
+            col_names.append(h_text.text)
+
+        for c, d in enumerate(a.findAll("td")):
+#             print ' c' + str(c) + '===' + str(d).replace("\n", "").replace("\r", "").replace("\t", "")
+            current_item[col_names[c]] = d.text
+            the_a = d.find('a')
+            if the_a:
+                current_item[col_names[c]] = the_a['href']
+
+        if row >= 1:
+            items.append(current_item)
+
+#     pprint.pprint(items)
+    ret['items'] = items
+    return ret
+
+
+def get_reg_actions_text(year, court_type, seq_number):
+    url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm'
+    cfid = '1550556'
+    cftoken = '74317641'
+    headers = get_headers(cfid, cftoken)
+    data = get_data(year, court_type, seq_number)
+#     r = requests.post(url, data, headers=headers, stream=True)
+    r = requests.post(url, data, headers=headers, stream=True)
+    r_text = r.text
+    return r_text
+
+def reg_actions_grid(year, court_type, seq_number):
+
+    case_info_grid(year, court_type, seq_number) # have only been able to make reg work after case_info
+
+    r_text = get_reg_actions_text(year, court_type, seq_number)
+    ret = get_reg_actions_dataset(r_text)
+    return ret
+
+def get_orig_mortgage_url_from_rtext(r_text):
+    grid = get_reg_actions_dataset(r_text)
+    return get_orig_mortgage_url_from_grid(grid)
+
+def case_info_grid(year, court_type, seq_number):
+    cfid = '1550556'
+    cftoken = '74317641'
+    id2 = year+'_'+court_type+'_'+seq_number
+    # print('case_info('+id+')')
+    url = get_url()
+    headers=get_headers(cfid, cftoken)
+    data=get_data(year, court_type, seq_number)
+#     r = requests.post(url, data, headers=headers, stream=True)
+    r = requests.post(url, data, headers=headers, stream=True)
+    soup = BeautifulSoup(r.text.encode('utf-8'), 'html.parser')
+#     print(soup.prettify())
+
+def reg_actions_grid_by_cn(cn):
+    cn_fields = get_case_number_fields(cn)
+    return reg_actions_grid(cn_fields['year'], cn_fields['court_type'], cn_fields['seq_number'])
+
+def get_case_number_fields(case_number):
+    m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', case_number)
+    if m:
+        # print(m.group(1)+','+m.group(2))
+        # print(m.groups())
+        ret = {}
+        ret['year'] = m.group(2)
+        ret['court_type'] = m.group(3)
+        ret['seq_number'] = m.group(4)
+        return ret
+
+
+def get_orig_mortgage_url_from_grid(g):
+    ret = None
+    for i in g['items']:
+#             pprint.pprint(i)
+        if 'Description' in i and 'OR MTG' in i['Description']:
+            ret = i['Img']
+    
+    return ret
+
+def get_orig_mortgage_url_by_yts(year, court_type, seq_number):
+    g = reg_actions_grid(year, court_type, seq_number)
+    return get_orig_mortgage_url_from_grid(g)
+
+def get_orig_mortgage_url_by_cn(cn):
+    ######## try to get both latest amount due as well as orig mtg from a single fetch of reg of actions
+    g = reg_actions_grid_by_cn(cn)
+#     print('='*80)
+    ret = get_orig_mortgage_url_from_grid(g)
     return ret

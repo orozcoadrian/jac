@@ -173,6 +173,8 @@ class Test(unittest.TestCase):
 
     def test_bclerk_then_bcpao12(self):
         self.assertAcctFromLegal('LT 14 BLK 180 PB 23 PG 53 PORT ST JOHN UNIT 6 COMM @ NW CNR S 21 T 23 R 35 SUBID JX', '') # should be 2322639, not blank, not 2306233 !!!
+        self.assertAcctFromLegal('BLK 40K U T174 W 260 FT OF S 530 FT OF N 790 FT THE VILLAGES OF SEAPORT CONDO ORB 2598/136 S 14 T 24 R 37 SUBID 00', '2428810')
+#         self.assertAcctFromLegal('LT 14 PB 1 PG 165 FLORIDA INDIAN RIVER LAND CO E 230 FT OF N 1/4 S 23 T 29 R 37', '---')
 
     def test_one(self):
         i=jac.bcpao.get_bcpaco_item('2724389')

@@ -70,6 +70,13 @@ class MainSheetBuilder(object):
         headers.append(jac.xl3.Cell.from_display("base_area"))
         headers.append(jac.xl3.Cell.from_display("year built"))
         headers.append(jac.xl3.Cell.from_display("owed - ass"))
+#         headers.append(jac.xl3.Cell.from_display("db-addr"))
+#         headers.append(jac.xl3.Cell.from_display("db-taxid"))
+#         headers.append(jac.xl3.Cell.from_display("db-area"))
+#         headers.append(jac.xl3.Cell.from_display("db-year"))
+#         headers.append(jac.xl3.Cell.from_display("db-ass"))
+#         headers.append(jac.xl3.Cell.from_display("db-fcode"))
+        headers.append(jac.xl3.Cell.from_display("orig_mtg"))
         return headers
     def get_display_case_number(self, case_number):
         return case_number.replace('XXXX-XX', '')
@@ -106,7 +113,7 @@ class MainSheetBuilder(object):
                 row.append(value_to_use)
             if 'owed' == h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
-                if 'latest_amount_due' in i:
+                if 'latest_amount_due' in i and i['latest_amount_due']:
                     a_str = i['latest_amount_due'].replace('$', '').replace(',', '')
                     if a_str:
                         try:
@@ -193,13 +200,13 @@ class MainSheetBuilder(object):
                     the_str = i['legal']['blk']
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'bcpao' in h.get_display():
-                bcpao_acc_str = None
+                the_str = None
                 if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
-                    bcpao_acc_str = i['bcpao_acc']
-                if bcpao_acc_str is None:
+                    the_str = i['bcpao_acc']
+                if the_str is None:
                     row.append(jac.xl3.Cell.from_display(''))
                 else:
-                    row.append(jac.xl3.Cell.from_link(bcpao_acc_str, jac.bcpao.get_bcpao_query_url_by_acct(bcpao_acc_str)))
+                    row.append(jac.xl3.Cell.from_link(the_str, jac.bcpao.get_bcpao_query_url_by_acct(the_str)))
             if 'f_code' in h.get_display():
                 fc_str = ''
                 if 'bcpao_item' in i and 'frame code' in i['bcpao_item']:
@@ -229,10 +236,65 @@ class MainSheetBuilder(object):
                 row.append(jac.xl3.Cell.from_display(the_str))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)
-                owed_column = 'O' # latest_amount_due
-                ass_column = 'P' # latest market value total
+                owed_column = 'N' # latest_amount_due
+                ass_column = 'O' # latest market value total
                 f_str = 'IF(AND(NOT(ISBLANK('+owed_column + row_str + ')),NOT(ISBLANK('+ass_column + row_str + '))),'+owed_column + row_str + '-'+ass_column + row_str + ',"")'
                 row.append(jac.xl3.Cell.from_formula(f_str))
+            if 'db-addr' == h.get_display():
+                the_str = ''
+                if 'bcpao_db_item' in i and 'address' in i['bcpao_db_item']:
+                    try:
+                        the_str = str(i['bcpao_db_item']['address'])
+                    except:
+                        raise
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'db-taxid' == h.get_display():
+                the_int = None
+                if 'bcpao_db_item' in i and 'TaxAcct' in i['bcpao_db_item']:
+                    the_int = i['bcpao_db_item']['TaxAcct']
+                if the_int is None:
+                    row.append(jac.xl3.Cell.from_display(''))
+                else:
+                    row.append(jac.xl3.Cell.from_link(str(the_int), jac.bcpao.get_bcpao_query_url_by_acct(str(the_int))))
+            if 'db-area' == h.get_display():
+                the_str = ''
+                if 'bcpao_db_item' in i and 'BaseArea' in i['bcpao_db_item']:
+                    try:
+                        the_str = int(i['bcpao_db_item']['BaseArea'])
+                    except:
+                        raise
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'db-year' == h.get_display():
+                the_str = ''
+                if 'bcpao_db_item' in i and 'YearBuilt' in i['bcpao_db_item']:
+                    try:
+                        the_str = int(i['bcpao_db_item']['YearBuilt'])
+                    except:
+                        raise
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'db-ass' == h.get_display():
+                the_str = ''
+                if 'bcpao_db_item' in i and 'MarketValueCurr' in i['bcpao_db_item']:
+                    try:
+                        the_str = float(i['bcpao_db_item']['MarketValueCurr'])
+                    except:
+                        raise
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'db-fcode' == h.get_display():
+                the_str = ''
+                if 'bcpao_db_item' in i and 'FrameCode' in i['bcpao_db_item']:
+                    try:
+                        the_str = str(i['bcpao_db_item']['FrameCode'])
+                    except:
+                        raise
+                row.append(jac.xl3.Cell.from_display(the_str))
+            if 'orig_mtg' == h.get_display():
+                the_str = None
+                if 'orig_mtg_link' in i:
+                    if i['orig_mtg_link'] and len(i['orig_mtg_link']) > 0:
+                        row.append(jac.xl3.Cell.from_link('link', i['orig_mtg_link']))
+                    else:
+                        row.append(jac.xl3.Cell.from_display(''))
     def get_sheet_name(self):
         return self.sheet_name
     def add_sheet(self, items):

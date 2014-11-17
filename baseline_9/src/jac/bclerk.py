@@ -41,8 +41,8 @@ def get_legal_by_case(case):
 def get_legal_from_str(the_str):
     print('get_legal_from_str('+the_str+')')
     ret={}
-    
-    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
+
+    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
     if m:
         # pprint.pprint(m)
         # pprint.pprint(m.groups())
@@ -56,6 +56,7 @@ def get_legal_from_str(the_str):
         # ret['subid']=m.group(4)
     elif 'condo'.upper() in the_str.upper():
         ret['condo']=True
+#     print('ret='+str(ret))
     return ret
 
 def get_records_grid_for_case_number(case_number):
@@ -86,5 +87,5 @@ def get_records_grid_for_case_number(case_number):
                     current_item[col_names[c]] = d.text
             if r > 1:
                 items.append(current_item)
-    
+
     return items

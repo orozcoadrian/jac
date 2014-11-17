@@ -104,6 +104,8 @@ def get_acct_by_legal(legal):
             block = block[:-1]+'.L'
         elif block and block.endswith('U'):
             block = block[:-1]+'.U'
+        elif block and block.endswith('K'):
+            block = block[:-1]+'.K'
         if lot and len(lot) == 4 and '.' not in lot:
             print('lot is length 4')
             lot = lot[0:2]+'.'+lot[2:4]

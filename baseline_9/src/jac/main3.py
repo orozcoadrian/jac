@@ -13,7 +13,7 @@ import mydate
 from datetime import date
 import record.MyRecordSet
 import pprint
-from fetch import Cfm, Legal, Bcpao
+from fetch import Cfm, Legal, Bcpao, Bcpao_db
 import os
 import zipfile
 import shutil
@@ -175,11 +175,13 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     fetchers.append(Cfm(out_dir_htm))
     fetchers.append(Legal())
     fetchers.append(Bcpao())
+#     fetchers.append(Bcpao_db())
     for r in mrs.get_records():
         print 'count_id: ' + str(r.item['count'])
         for f in fetchers:
             logging.info(f.get_name())
             f.fetch(r)
+    logging.info('fetch complete')
 
     pprint.pprint(mrs.get_records())
     sheetBuilder = jac.xl_builder.MainSheetBuilder(sheet_name)

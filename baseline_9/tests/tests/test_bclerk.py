@@ -57,6 +57,13 @@ class Test(unittest.TestCase):
 #         print('4')
 #         jac.myutils.print_small_texts(list(soup.descendants))
 
+    def test_bclerk_0(self):
+#         legal_str = 'LT 34 PB 25 PG 105 RAVENCREST S 22 T 20G R 34 SUBID 01'
+#         legal_str = 'BLK 40K U T174 W 260 FT OF S 530 FT OF N 790 FT THE VILLAGES OF SEAPORT CONDO ORB 2598/136 S 14 T 24 R 37 SUBID 00'
+        legal_str = 'LT 14 PB 1 PG 165 FLORIDA INDIAN RIVER LAND CO E 230 FT OF N 1/4 S 23 T 29 R 37'
+        legal=jac.bclerk.get_legal_from_str(legal_str)
+        print('legal='+str(legal))
+
 
 
 if __name__ == "__main__":

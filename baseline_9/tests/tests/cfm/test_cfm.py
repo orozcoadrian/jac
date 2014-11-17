@@ -5,6 +5,8 @@ Created on Jul 27, 2014
 '''
 import unittest
 from jac.cfm import cfm
+import pprint
+import logging
 
 class Test(unittest.TestCase):
 
@@ -22,6 +24,45 @@ class Test(unittest.TestCase):
         expected_data='CaseNumber1=05&CaseNumber2=1950&CaseNumber3=hj&CaseNumber4=56&CaseNumber5=&CaseNumber6=&submit=Submit'
         self.assertEqual(expected_data, cfm.get_data(year, court_type, seq_number))
 #         cfm.cfm.case_info(out_dir, year, court_type, seq_number, cfid, cftoken)
+
+    def test2(self):
+#         cfm.case_info_grid(year='2013', court_type='CA', seq_number='033024')
+#         print('='*80)
+        ret = cfm.reg_actions_grid(year='2013', court_type='CA', seq_number='033024')
+        print('='*80)
+        for i in ret['items']:
+            if 'OR MTG' in i['Description']:
+                pprint.pprint(i)
+                
+    def test3(self):
+        cn = cfm.get_case_number_fields('05-2007-CA-025830-XXXX-XX')
+        pprint.pprint(cn)
+        
+    def test4(self):
+        ret = cfm.reg_actions_grid_by_cn('05-2007-CA-025830-XXXX-XX')
+        print('='*80)
+        for i in ret['items']:
+#             pprint.pprint(i)
+            if 'Description' in i and 'OR MTG' in i['Description']:
+                print(i['Img'])
+                
+    def test5(self):
+        url = cfm.get_orig_mortgage_url_by_cn('05-2007-CA-025830-XXXX-XX')
+        print(url)
+        
+    def test6(self):
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.debug('test6 starting')
+        self.assertEquals('http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=10910667&PROJ_ID=BCC&All=Y&UseRedacted=Y',
+                          cfm.get_orig_mortgage_url_by_cn('05-2007-CA-025830-XXXX-XX'))
+    def test7(self):
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
+        logging.getLogger().setLevel(logging.DEBUG)
+        logging.debug('test7 starting')
+        self.assertEquals('http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=10910667&PROJ_ID=BCC&All=Y&UseRedacted=Y',
+                          cfm.get_orig_mortgage_url_by_yts('2007', 'CA', '025830'))
+
 
 
 if __name__ == "__main__":
