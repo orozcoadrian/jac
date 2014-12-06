@@ -50,6 +50,28 @@ class Test(unittest.TestCase):
         url = cfm.get_orig_mortgage_url_by_cn('05-2007-CA-025830-XXXX-XX')
         print(url)
         
+    def test5b(self):
+        url = cfm.get_orig_mortgage_url_by_cn('05-2009-CA-028248')
+        print(url)
+        self.assertEqual('http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=23642134&PROJ_ID=BCC&All=Y&UseRedacted=Y', url)
+    def test5c(self):
+        # works with soup = BeautifulSoup(r_text.encode('utf-8'), 'html5lib')
+        self.assert_orig_mortgage_by_cn('05-2009-CA-046394','http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=20413258&PROJ_ID=BCC&All=Y&UseRedacted=Y')
+    def test5cc(self):
+        # works with soup = BeautifulSoup(r_text.encode('utf-8'), 'html5lib')
+        self.assert_orig_mortgage_by_cn('05-2013-CA-027927-XXXX-XX','http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=22425977&PROJ_ID=BCC&All=Y&UseRedacted=Y')
+#         pass
+    def test5d(self):
+        self.assert_orig_mortgage_by_cn('05-2009-CA-012115-XXXX-XX','http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=19297279&PROJ_ID=BCC&All=Y&UseRedacted=Y')
+        #
+    def test5e(self):
+        self.assert_orig_mortgage_by_cn('05-2012-CA-051727','http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=23228067&PROJ_ID=BCC&All=Y&UseRedacted=Y')
+        
+        
+    def assert_orig_mortgage_by_cn(self, cn, expected_url):
+        self.assertEqual(expected_url, cfm.get_orig_mortgage_url_by_cn(cn))
+        #
+        
     def test6(self):
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
         logging.getLogger().setLevel(logging.DEBUG)

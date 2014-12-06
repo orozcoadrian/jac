@@ -299,12 +299,21 @@ class MainSheetBuilder(object):
                         row.append(jac.xl3.Cell.from_display(''))
             if 'taxes' in h.get_display():
                 the_str = None
+                value_to_use = None
                 if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
                     the_str = i['bcpao_acc']
                 if the_str is None:
                     row.append(jac.xl3.Cell.from_display(''))
                 else:
-                    row.append(jac.xl3.Cell.from_link(jac.tax.get_pay_all_from_taxid(the_str), jac.tax.get_tax_url_from_taxid(the_str)))
+                    ###### move get pay all to a new fetcher
+                    display_str = jac.tax.get_pay_all_from_taxid(the_str)
+                    if display_str:
+                        display_str = display_str.replace('$', '').replace(',', '')
+                        try:
+                            value_to_use = jac.xl3.Cell.from_link(display_str, jac.tax.get_tax_url_from_taxid(the_str))
+                        except:
+                            value_to_use = jac.xl3.Cell.from_display(display_str)
+                        row.append(value_to_use)
 #jac.tax.get_pay_all_from_taxid(tax_id)
     def get_sheet_name(self):
         return self.sheet_name

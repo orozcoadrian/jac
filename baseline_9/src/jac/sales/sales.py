@@ -1,4 +1,5 @@
 import requests
+import logging
 from bs4 import BeautifulSoup
 
 def get_rows(the_html):
@@ -28,9 +29,10 @@ def get_items():
 
 def add_foreclosures(mrs, limit=None):
     all2 = get_items()
-    print('all:' + str(len(all2)))
+    logger = logging.getLogger(__name__)
+    logger.info('all foreclosures:' + str(len(all2)))
     to_set = all2
     if limit is not None:
         to_set = all2[:limit]
-    print('to_set:' + str(len(to_set)))
+    logger.info('to_set:' + str(len(to_set)))
     mrs.set_items(to_set)

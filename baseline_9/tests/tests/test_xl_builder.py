@@ -19,7 +19,7 @@ class Test(unittest.TestCase):
         self.assertEqual('http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=the_url&bt=OR&d=5%2F31%2F2014&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES',instance.get_bclerk_name_url("the_url"))
         self.assertEqual(None,instance.get_items_to_use(None))
         headers=instance.get_headers()
-        self.assertEqual(18, len(headers))
+        self.assertEqual(20, len(headers))
         self.assertEqual('cn-',instance.get_display_case_number('cn-XXXX-XX'))
 
     def test_add_to_row(self):
@@ -40,10 +40,10 @@ class Test(unittest.TestCase):
         instance = jac.xl_builder.MainSheetBuilder()
         self.assertEqual('MainSheetBuilder',instance.get_name())
         headers=instance.get_headers()
-        self.assertEqual(18, len(headers))
+        self.assertEqual(20, len(headers), str(headers))
 
         header_strings = [cell.get_display() for cell in headers]
-        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'fc._sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-name', 'bcpao', 'f_code', 'owed', 'assessed', 'base_area', 'year built', 'owed - ass'], header_strings)
+        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'fc._sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-name', 'bcpao', 'f_code', 'owed', 'assessed', 'base_area', 'year built', 'owed - ass', 'orig_mtg', 'taxes'], header_strings)
 
     def test_MainSheetBuilder_with_rows(self):
         instance = jac.xl_builder.MainSheetBuilder()

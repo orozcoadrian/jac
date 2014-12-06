@@ -470,7 +470,7 @@ def get_bcpaco_item(acct):
             use_code=list(bi_cell.parent.parent.parent.parent.parent.descendants)[52].encode('utf-8')
             ret['use code']=dict(use_code=use_code, use_code_str=get_use_code_str(use_code))
             ret['year built']=list(bi_cell.parent.parent.parent.parent.parent.descendants)[56].encode('utf-8')
-            ret['frame code']=list(bi_cell.parent.parent.parent.parent.parent.descendants)[65].encode('utf-8')
+            ret['frame code']=list(bi_cell.parent.parent.parent.parent.parent.descendants)[65].parent.parent.get_text().encode('utf-8')
     except:
         raise#print('sdf ex: '+str(e))
 

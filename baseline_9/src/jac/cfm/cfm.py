@@ -3,6 +3,8 @@ import requests
 import re
 from bs4 import BeautifulSoup
 import pprint
+import logging
+import sys
 
 def get_url():
     return 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm'
@@ -71,7 +73,7 @@ def get_lad_from_reg_text(r_text):
         if m:
         # print(m.groups())
             lad = m.group(1)
-    
+
         # print(l)
         # if '<font color="Blue">' in l:
         # print(l)
@@ -94,7 +96,10 @@ def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
 
 
 def get_reg_actions_dataset(r_text):
-    soup = BeautifulSoup(r_text.encode('utf-8'))
+#     print(r_text[0:len(r_text)/2])
+#     soup = BeautifulSoup(r_text)
+#     soup = BeautifulSoup(r_text.encode('utf-8'), 'html.parser')
+    soup = BeautifulSoup(r_text.encode('utf-8'), 'html5lib')
 #     print soup.prettify()
 #     print('case number: ' + soup.title.text)
 #     print('case title: ' + soup.find_all('font', color='Blue')[0].text)
@@ -106,7 +111,7 @@ def get_reg_actions_dataset(r_text):
     col_names = []
     trs = soup.find_all('table')[1].findAll("tr")
     for row, a in enumerate(trs):
-#         print 'r' + str(r) + '===' + str(a).replace("\n", "").replace("\r", "").replace("\t", "")
+#         print 'r' + str(row) + '===' + str(a).replace("\n", "").replace("\r", "").replace("\t", "")
         current_item = {}
         for h_index, h_text in enumerate(a.findAll("th")):
 #             print ' h_index' + str(h_index) + '===' + str(h_text).replace("\n", "").replace("\r", "").replace("\t", "")
@@ -114,10 +119,15 @@ def get_reg_actions_dataset(r_text):
 
         for c, d in enumerate(a.findAll("td")):
 #             print ' c' + str(c) + '===' + str(d).replace("\n", "").replace("\r", "").replace("\t", "")
-            current_item[col_names[c]] = d.text
-            the_a = d.find('a')
-            if the_a:
-                current_item[col_names[c]] = the_a['href']
+            the_a = None
+            try:
+                current_item[col_names[c]] = d.text
+                the_a = d.find('a')
+                if the_a:
+                    current_item[col_names[c]] = the_a['href']
+            except (IndexError, KeyError) as error:
+                logging.debug(' '.join(['********exception******', str(error), str(sys.exc_info()[0]), str(col_names), str(d)]))
+#                 logging.exception(error)
 
         if row >= 1:
             items.append(current_item)
@@ -168,10 +178,10 @@ def reg_actions_grid_by_cn(cn):
     return reg_actions_grid(cn_fields['year'], cn_fields['court_type'], cn_fields['seq_number'])
 
 def get_case_number_fields(case_number):
-    m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', case_number)
+    m = re.search('(.*)-(.*)-(.*)-(.*)', case_number.replace('-XXXX-XX',''))
     if m:
         # print(m.group(1)+','+m.group(2))
-        # print(m.groups())
+        print(m.groups())
         ret = {}
         ret['year'] = m.group(2)
         ret['court_type'] = m.group(3)
@@ -181,11 +191,29 @@ def get_case_number_fields(case_number):
 
 def get_orig_mortgage_url_from_grid(g):
     ret = None
+    valid_patterns_for_original_mortgage = ['OR MTG', 'MTG & ORIG', 'COPY OF MTG', 'ORIGINAL NOTE & MORTGAGE DEED', 'ER: F/J FCL']
+#     for i in g['items']:
+# #         pprint.pprint(i)
+# #         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
+#         if 'Description' in i and any(x in i['Description'] for x in valid_patterns_for_original_mortgage):
+#             if i['Img']:
+#                 ret = i['Img']
+    for x in valid_patterns_for_original_mortgage:
+        ret = get_orig_mortgage_url_from_grid2(g, x)
+        if ret:
+            break
+
+    return ret
+
+def get_orig_mortgage_url_from_grid2(g, a_pattern):
+    ret = None
     for i in g['items']:
-#             pprint.pprint(i)
-        if 'Description' in i and 'OR MTG' in i['Description']:
-            ret = i['Img']
-    
+#         pprint.pprint(i)
+#         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
+        if 'Description' in i and a_pattern in i['Description']:
+            if i['Img']:
+                ret = i['Img']
+                break
     return ret
 
 def get_orig_mortgage_url_by_yts(year, court_type, seq_number):

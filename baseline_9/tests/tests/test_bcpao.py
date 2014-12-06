@@ -42,6 +42,18 @@ class Test(unittest.TestCase):
         #self.assertEqual(i['year built'] , '1990') # broken
         #self.assertEqual(i['sq feet'] , '1,256') # broken
         # self.assertEqual(i['total base area'] , '1,173')
+        
+    def test_frame_code(self):
+        i=jac.bcpao.get_bcpaco_item('2861697')
+        #https://www.bcpao.us/asp/Show_parcel.asp?acct=2861697&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
+        pprint.pprint(i)
+        self.assertEqual(i['address'] , '510  TORTUGA WAY , WEST MELBOURNE 32904')
+        self.assertEqual(i['latest market value total'] , '$150,810')
+        self.assertEqual(i['zip_code'] , '32904')
+        self.assertEqual(i['frame code'] , '03, 04')
+        self.assertEqual(i['year built'] , '2006') # broken
+#         self.assertEqual(i['sq feet'] , '2,862') # broken
+        self.assertEqual(i['total base area'] , '2,862')
 
     def test_legal(self):
 #                       T  R  S  SUBID    BLK

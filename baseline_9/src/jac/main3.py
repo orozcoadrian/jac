@@ -27,7 +27,10 @@ def get_non_cancelled_nums(args, mrs):
     return date_counts
 
 def main3():
-    print('START')
+    logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+#     logging.getLogger().setLevel(logging.DEBUG)
+    logger = logging.getLogger(__name__)
+    logger.info('START')
     start = time.time()
     parser = argparse.ArgumentParser()
     parser.add_argument("--max", default='3000', type=int, help="max number or items to process.")
@@ -45,12 +48,10 @@ def main3():
     parser.add_argument("--passw", help="email password.")
     args = parser.parse_args()
 
-    logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
-    logging.getLogger().setLevel(logging.DEBUG)
+
     logging.debug('jac starting')
     #logging.debug('jac starting2')
     #print('asdf')
-    start = time.time()
     timestamp = time.strftime("%Y-%m-%d_%H-%M-%S")
 
     logging.info('args: '+str(args))
@@ -61,7 +62,7 @@ def main3():
     date_counts = pprint.pformat(jac.myutils.get_dates_count_map(mrs.get_records())).replace('\n', '<br>').replace('datetime.datetime(','').replace(', 0, 0','').replace(', ','/').replace(')','')
 
     dates = mydate.get_next_dates(date.today())
-    print(dates)
+    logging.info(dates)
     dates_to_add = dates#[0:2]
     if args.dates:
         dates_to_add = [datetime.datetime.strptime(x, '%m/%d/%Y') for x in args.dates]
@@ -71,7 +72,7 @@ def main3():
     #date_strings_to_add2.extend(args.dates)
     
     short_date_strings_to_add = [x.strftime("%m.%d") for x in dates_to_add]
-    print('short_date_strings_to_add: ' + str(short_date_strings_to_add))
+    logging.info('short_date_strings_to_add: ' + str(short_date_strings_to_add))
     abc = '-'.join(short_date_strings_to_add[0:1])
 
     parent_out_dir = 'outputs'
@@ -79,7 +80,7 @@ def main3():
     if args.out_tag:
         out_dir+='_'+args.out_tag
     os.makedirs(out_dir)
-    print(os.path.abspath(out_dir))
+    logging.info(os.path.abspath(out_dir))
 
     the_tag = abc#timestamp
     if args.out_tag:
@@ -96,8 +97,8 @@ def main3():
 
 
     datasets = []
-    print('date_strings_to_add: ' + str(date_strings_to_add))
-    print('abc: ' + abc)
+    logging.info('date_strings_to_add: ' + str(date_strings_to_add))
+    logging.info('abc: ' + abc)
 #     return
     datasets.extend([get_mainsheet_dataset(args, fnum, mrs, out_dir, date_str) for date_str in date_strings_to_add])
     #datasets.append(get_mainsheet_dataset(args, fnum, mrs, out_dir, '02/18/2015'))
@@ -153,6 +154,7 @@ def main3():
     print('END')
 
 def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
+    logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
     filters = []
     filters.append(jac.filters.FilterCountId.FilterCountId(args))
     filters.append(jac.filters.FilterCancelled.FilterCancelled(args))
@@ -161,7 +163,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     filterByDatesObj.set_dates(date_strings_to_add)
     filters.append(filterByDatesObj)
     filters.append(fnum)
-    print(date_string_to_add)
+    logging.info(date_string_to_add)
     for f in filters:
         logging.info(f.get_name() + ' before:' + str(len(mrs.get_records())))
         mrs = f.apply(mrs)
@@ -177,13 +179,13 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     fetchers.append(Bcpao())
 #     fetchers.append(Bcpao_db())
     for r in mrs.get_records():
-        print 'count_id: ' + str(r.item['count'])
+        logging.info('count_id: ' + str(r.item['count']))
         for f in fetchers:
             logging.info(f.get_name())
             f.fetch(r)
     logging.info('fetch complete')
-
-    pprint.pprint(mrs.get_records())
+    logging.info('num records: '+str(len(mrs.get_records())))
+#     pprint.pprint(mrs.get_records())
     sheetBuilder = jac.xl_builder.MainSheetBuilder(sheet_name)
     sheetBuilder.set_args(args)
     dataset = sheetBuilder.add_sheet(mrs.get_records())

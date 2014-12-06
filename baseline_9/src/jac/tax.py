@@ -299,10 +299,13 @@ def get_tax_text_from_taxid(tax_id):
     return r
 
 def get_pay_all_from_taxid(tax_id):
+    ret = '0'
     r = get_tax_text_from_taxid(tax_id)
 #         print(r.text)
     pay_all = get_pay_all_from_tax_text(r.text)
-    return pay_all
+    if pay_all:
+        ret = pay_all
+    return ret
 
 if __name__ == '__main__':
     sys.exit(main3())
