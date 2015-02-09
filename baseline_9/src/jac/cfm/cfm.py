@@ -69,7 +69,7 @@ def get_lad_from_reg_text(r_text):
         # m = re.search('<font color="Blue">(.* VS .*)<', l)
         # if m:
         # print(indent+m.group(1))
-        m = re.search('.*AMOUNT DUE: \$([\d,.]*).*', l)
+        m = re.search('.*AMOUNT DUE: \$ ?([\d,.]*).*', l)
         if m:
         # print(m.groups())
             lad = m.group(1)
@@ -225,4 +225,13 @@ def get_orig_mortgage_url_by_cn(cn):
     g = reg_actions_grid_by_cn(cn)
 #     print('='*80)
     ret = get_orig_mortgage_url_from_grid(g)
+    return ret
+
+def get_amount_due_by_cn(cn):
+    ######## try to get both latest amount due as well as orig mtg from a single fetch of reg of actions
+    g = reg_actions_grid_by_cn(cn)
+    cn_fields = get_case_number_fields(cn)
+    r_text = get_reg_actions_text(cn_fields['year'], cn_fields['court_type'], cn_fields['seq_number'])
+#     print('='*80)
+    ret = get_lad_from_reg_text(r_text)
     return ret

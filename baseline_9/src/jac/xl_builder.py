@@ -36,7 +36,7 @@ class MainSheetBuilder(object):
         self.args = args
     @staticmethod
     def get_bclerk_name_url(name):  # TODO: move this to xl3
-        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=' + urllib.quote(name) + '&bt=OR&d=5%2F31%2F2014&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES'
+        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=' + urllib.quote(name) + '&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES'
     @staticmethod
     def get_case_number_url(cn):
         return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn='+cn+'&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
@@ -93,7 +93,7 @@ class MainSheetBuilder(object):
             if 'high' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(''))
             if 'win' in h.get_display():
-                row.append(jac.xl3.Cell.from_display(''))
+                row.append(jac.xl3.Cell.from_display(i['comment']))
             if 'case_number' in h.get_display():
                 row.append(jac.xl3.Cell.from_link(self.get_display_case_number(i['case_number']), self.get_case_number_url(i['case_number'])))
             if 'case_title' in h.get_display():
@@ -298,22 +298,11 @@ class MainSheetBuilder(object):
                     else:
                         row.append(jac.xl3.Cell.from_display(''))
             if 'taxes' in h.get_display():
-                the_str = None
-                value_to_use = None
-                if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
-                    the_str = i['bcpao_acc']
-                if the_str is None:
-                    row.append(jac.xl3.Cell.from_display(''))
-                else:
-                    ###### move get pay all to a new fetcher
-                    display_str = jac.tax.get_pay_all_from_taxid(the_str)
-                    if display_str:
-                        display_str = display_str.replace('$', '').replace(',', '')
-                        try:
-                            value_to_use = jac.xl3.Cell.from_link(display_str, jac.tax.get_tax_url_from_taxid(the_str))
-                        except:
-                            value_to_use = jac.xl3.Cell.from_display(display_str)
-                        row.append(value_to_use)
+                try:
+                    value_to_use = jac.xl3.Cell.from_link(i['taxes_value'], i['taxes_url'])
+                except:
+                    value_to_use = jac.xl3.Cell.from_display(i['taxes_value'])
+                row.append(value_to_use)
 #jac.tax.get_pay_all_from_taxid(tax_id)
     def get_sheet_name(self):
         return self.sheet_name

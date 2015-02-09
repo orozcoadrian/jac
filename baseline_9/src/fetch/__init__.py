@@ -1,6 +1,6 @@
 import re
 from jac.cfm import cfm
-from jac import bclerk, bcpao, bcpao_radius,db
+from jac import bclerk, bcpao, bcpao_radius,db,tax
 class Fetcher(object):
     def get_name(self):
         return 'Fetcher'
@@ -58,3 +58,25 @@ class Bcpao_db(Fetcher):
                 mr.item['bcpao_db_acc']=db_item['TaxAcct']
                 mr.item['bcpao_db_item'] = db_item
             #mr.item['bcpao_radius'] = bcpao_radius.get_average_from_radius(mr.item['bcpao_acc'])
+            
+class Taxes(Fetcher):
+    def get_name(self):
+        return 'Taxes'
+    def fetch(self, mr):
+        the_str = None
+        value_to_use = None
+        url_to_use = None
+        if 'bcpao_acc' in mr.item and len(mr.item['bcpao_acc']) > 0:
+            the_str = mr.item['bcpao_acc']
+        if the_str is None:
+            value_to_use = None#jac.xl3.Cell.from_display('')
+        else:
+            ###### move get pay all to a new fetcher
+            display_str = tax.get_pay_all_from_taxid(the_str)
+            if display_str:
+                display_str = display_str.replace('$', '').replace(',', '')
+                value_to_use = display_str
+                url_to_use = tax.get_tax_url_from_taxid(the_str)
+                
+        mr.item['taxes_value'] = value_to_use
+        mr.item['taxes_url'] = url_to_use

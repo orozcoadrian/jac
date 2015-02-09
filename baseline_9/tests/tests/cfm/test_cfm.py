@@ -67,6 +67,11 @@ class Test(unittest.TestCase):
     def test5e(self):
         self.assert_orig_mortgage_by_cn('05-2012-CA-051727','http://vweb3.brevardclerk.us/PublicAccess/ImageView.aspx?DKT_ID=23228067&PROJ_ID=BCC&All=Y&UseRedacted=Y')
         
+    def test5f(self):
+        amount = cfm.get_amount_due_by_cn('05-2009-CA-073572-XXXX-XX')
+        self.assertEqual('398,233.66', amount)
+
+        
         
     def assert_orig_mortgage_by_cn(self, cn, expected_url):
         self.assertEqual(expected_url, cfm.get_orig_mortgage_url_by_cn(cn))

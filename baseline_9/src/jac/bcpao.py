@@ -2,7 +2,7 @@
 #import os
 import requests
 #from time import strftime
-#import re
+import re
 import pprint
 import urllib
 # from urllib import parse
@@ -35,6 +35,44 @@ def get_cpao_query_link_by_acct(acct):
     return '<br><a href='+get_bcpao_query_url_by_acct(acct)+'>'+acct+'</a>'
 
 
+
+def convertBlock(block):
+    blk_str = block
+    if block:
+        m = re.search('^(?P<num>[\0-9]+)(?P<letter>[A-Z])$', block)
+        if m:
+            block = m.group('num') + '.' + m.group('letter')
+    #     if block and block.endswith('S'):
+    #         block = block[:-1] + '.S'
+    #     elif block and block.endswith('F'):
+    #         block = block[:-1] + '.F'
+    #     elif block and block.endswith('J'):
+    #         block = block[:-1] + '.J'
+    #     elif block and block.endswith('L'):
+    #         block = block[:-1] + '.L'
+    #     elif block and block.endswith('U'):
+    #         block = block[:-1] + '.U'
+    #     elif block and block.endswith('K'):
+    #         block = block[:-1] + '.K'
+            
+            
+    #     if block and len(block) == 4 and '.' not in block:
+    #         print 'block is length 4'
+    #         block = block[0:3] + '.' + block[3:4]
+        if block:
+            blk_str = block
+    return blk_str
+
+
+def convertLot(lot):
+    lot_str = ''
+    if lot and len(lot) == 4 and '.' not in lot:
+        print 'lot is length 4'
+        lot = lot[0:2] + '.' + lot[2:4]
+    if lot:
+        lot_str = lot
+    return lot_str
+
 def get_acct_by_legal(legal):
     sub, lot, block, pb, pg, s, t, r, subid = legal
     sub = sub.replace(u'\xc2', u'').encode('utf-8')
@@ -58,6 +96,9 @@ def get_acct_by_legal(legal):
 #         elif pb is not None and pg is not None and lot is not None:
 #             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
 #             offset=86
+#         elif t and r and s and subid and lot:
+#             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk=&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
         elif pg is not None:
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
@@ -94,30 +135,10 @@ def get_acct_by_legal(legal):
 
         data=None
         offset=82
-        if block and block.endswith('S'):
-            block = block[:-1]+'.S'
-        elif block and block.endswith('F'):
-            block = block[:-1]+'.F'
-        elif block and block.endswith('J'):
-            block = block[:-1]+'.J'
-        elif block and block.endswith('L'):
-            block = block[:-1]+'.L'
-        elif block and block.endswith('U'):
-            block = block[:-1]+'.U'
-        elif block and block.endswith('K'):
-            block = block[:-1]+'.K'
-        if lot and len(lot) == 4 and '.' not in lot:
-            print('lot is length 4')
-            lot = lot[0:2]+'.'+lot[2:4]
-        if block and len(block) == 4 and '.' not in block:
-            print('block is length 4')
-            block = block[0:3]+'.'+block[3:4]
-        blk_str=''
-        if block:
-            blk_str = block
-        lot_str=''
-        if lot:
-            lot_str = lot
+        blk_str = convertBlock(block)
+        if not blk_str:
+            blk_str = ''
+        lot_str = convertLot(lot)
         data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+str(subid)+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         req = requests.post(url, headers=headers, data=data)
         # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'

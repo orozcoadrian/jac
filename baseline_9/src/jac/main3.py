@@ -13,7 +13,7 @@ import mydate
 from datetime import date
 import record.MyRecordSet
 import pprint
-from fetch import Cfm, Legal, Bcpao, Bcpao_db
+from fetch import Cfm, Legal, Bcpao, Bcpao_db, Taxes
 import os
 import zipfile
 import shutil
@@ -157,7 +157,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
     filters = []
     filters.append(jac.filters.FilterCountId.FilterCountId(args))
-    filters.append(jac.filters.FilterCancelled.FilterCancelled(args))
+#     filters.append(jac.filters.FilterCancelled.FilterCancelled(args))
     filterByDatesObj = jac.filters.FilterByDates(args)
     date_strings_to_add = [date_string_to_add] #[x.strftime("%m/%d/%Y") for x in dates_to_add]
     filterByDatesObj.set_dates(date_strings_to_add)
@@ -178,6 +178,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     fetchers.append(Legal())
     fetchers.append(Bcpao())
 #     fetchers.append(Bcpao_db())
+    fetchers.append(Taxes())
     for r in mrs.get_records():
         logging.info('count_id: ' + str(r.item['count']))
         for f in fetchers:

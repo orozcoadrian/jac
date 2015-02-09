@@ -16,7 +16,7 @@ class Test(unittest.TestCase):
         instance = jac.xl_builder.MainSheetBuilder()
         self.assertEqual('MainSheetBuilder',instance.get_name())
         instance.set_args(None)
-        self.assertEqual('http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=the_url&bt=OR&d=5%2F31%2F2014&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES',instance.get_bclerk_name_url("the_url"))
+        self.assertEqual('http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=the_url&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES',instance.get_bclerk_name_url("the_url"))
         self.assertEqual(None,instance.get_items_to_use(None))
         headers=instance.get_headers()
         self.assertEqual(20, len(headers))
@@ -30,6 +30,8 @@ class Test(unittest.TestCase):
         test_item['case_title']='ct'
         test_item['foreclosure_sale_date']='fsd'
         test_item['count']='c'
+        test_item['comment']=''
+        test_item['taxes_value']=''
         r=jac.record.MyRecord.MyRecord(test_item)
         instance.add_to_row(test_row, r, 0)
         #print(test_row)
@@ -52,6 +54,8 @@ class Test(unittest.TestCase):
                                       ,'case_title':'ct0'
                                       ,'foreclosure_sale_date':'2'
                                       ,'count':'2'
+                                      ,'comment':''
+                                      ,'taxes_value':''
                                       })]
         data_set = instance.add_sheet(records)
         self.assertTrue(data_set is not None)
