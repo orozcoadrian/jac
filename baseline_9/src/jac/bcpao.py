@@ -16,6 +16,7 @@ from urllib2 import urlopen
 #import html5lib
 import unittest
 import bclerk
+import logging
 
 
 def get_use_code_str(use_code):
@@ -54,8 +55,8 @@ def convertBlock(block):
     #         block = block[:-1] + '.U'
     #     elif block and block.endswith('K'):
     #         block = block[:-1] + '.K'
-            
-            
+
+
     #     if block and len(block) == 4 and '.' not in block:
     #         print 'block is length 4'
     #         block = block[0:3] + '.' + block[3:4]
@@ -73,10 +74,272 @@ def convertLot(lot):
         lot_str = lot
     return lot_str
 
-def get_acct_by_legal(legal):
+def get_accts_by_legal_by_sub__subname_lot_block(legal):
     sub, lot, block, pb, pg, s, t, r, subid = legal
     sub = sub.replace(u'\xc2', u'').encode('utf-8')
-    print('get_acct_by_legal(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+    print('get_accts_by_legal_by_sub__subname_lot_block(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+    ret=''
+
+#         if pb is not None and pg is not None and lot is not None and block is not None:
+#             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#             offset=86
+    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('pull down: "Subdivision Name, Lot & Block"')
+    if sub and lot and block:
+        print('Sub Name: ' + sub)
+        print('block: ' + block)
+        print('lot: ' + lot)
+        data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
+        bcpao_results_string = get_bcpao_results_string(data)
+#         soup = BeautifulSoup(bcpao_results_string, 'html.parser')
+        ret = get_results_from_bcpao_results_string(bcpao_results_string)
+    return ret
+
+def get_acct_by_legal_by_sub__sub_block_lot(legal):
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    print('get_acct_by_legal_by_sub(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+    ret=''
+
+    url = 'https://www.bcpao.us/asp/find_property.asp'
+    headers = {
+        # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
+        'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    if not ret:
+        data=None
+        offset=82
+#         if pb is not None and pg is not None and lot is not None and block is not None:
+#             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#             offset=86
+        if sub and lot and block:
+            data='SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
+        # r = requests.post(url, data, stream=True)
+        req = requests.post(url, headers=headers, data=data)
+        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # print(the_url)
+        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+        # print_headers(the_url, 'html.parser')
+        rers_cell = soup.find(text="Real Estate Records Search")
+
+#         for a in soup.find_all('a'):
+#             pprint.pprint(a)
+        aerials = soup.find_all('a', text="Aerial")
+        print(str(len(aerials)))
+        if aerials and len(aerials) > 1:
+            # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
+            print('ignoring this whole page because we have more than one result (tax ids)')
+            rers_cell = None
+        # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+        # print_headers(soup, 'Real Estate Records Search')
+        if rers_cell is not None:
+            # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
+        # print(bi_cell.parent.parent.parent.parent)
+        # # print(list(bi_cell.parent.parent.parent.parent.descendants))
+        # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
+            # try:
+                # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
+            # except:
+                # pass
+            # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
+            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
+    return ret
+
+
+def get_results_from_bcpao_results_string(bcpao_results_string):
+#     print(bcpao_results_string)
+    ret = []
+    soup = BeautifulSoup(bcpao_results_string, 'html.parser')
+    table = soup.find('table', border='1')
+    if table:
+        trs = table.find_all(   'tr')
+
+        for index, item in enumerate(trs):
+            tds = item.find_all('td')
+            if len(tds) > 0:
+                acct = tds[2].a.string
+                name = str(tds[3].contents[0])
+                addr = str(tds[4].contents[0])
+                pid = str(tds[5].contents[0])
+                if len(acct) > 0:
+                    acct = acct.replace('<br/>', '')
+                if len(name) > 0:
+                    name = name.replace('<br/>', '')
+                if len(addr) > 0:
+                    addr = addr.replace('<br/>', '')
+                if len(pid) > 0:
+                    pid = pid.replace('<br/>', '')
+                my_ret_item = {}
+                my_ret_item['acct'] = acct
+                my_ret_item['name'] = name
+                my_ret_item['addr'] = addr
+                my_ret_item['pid'] = pid
+                ret.append(my_ret_item)
+
+    return ret
+
+
+def get_bcpao_results_string(data):
+    url = 'https://www.bcpao.us/asp/find_property.asp'
+    headers = { # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
+        'Cookie':'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
+        'Content-Type':'application/x-www-form-urlencoded'}
+    print 'url: ' + url
+    print 'data: ' + data
+    req = requests.post(url, headers=headers, data=data)
+    bcpao_results_string = req.text.encode('utf-8')
+    return bcpao_results_string
+
+def get_accts_by_legal_by_sub__sub_pg_lot(legal):
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    print('get_accts_by_legal_by_sub__sub_pg_lot(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+
+
+
+
+    ret=[]
+    data=None
+    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('pull down: "Subdivision Name, Lot & Block"')
+    if sub and pg and lot:
+        print('sub: ' + sub)
+        print('pg: ' + pg)
+        print('lot: ' + lot)
+        data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
+        bcpao_results_string = get_bcpao_results_string(data)
+        ret = get_results_from_bcpao_results_string(bcpao_results_string)
+    return ret
+
+def get_accts_by_legal_by_plat__pb_pg_lot_block(legal):
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    print('get_accts_by_legal_by_plat__pb_pg_lot_block(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+
+    ret=[]
+    data=None
+    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('pull down: "Plat Book/Page, Lot & Block"')
+    if pb and pg and lot:
+        print('pb: ' + pb)
+        print('pg: ' + pg)
+
+        print('lot: ' + lot)
+        block_str = ''
+        if block:
+            print('block: ' + block)
+            block_str = str(block)
+
+        data='SearchBy=Plat&blk='+block_str+'&page='+str(pg)+'&book='+str(pb)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
+        bcpao_results_string = get_bcpao_results_string(data)
+        ret = get_results_from_bcpao_results_string(bcpao_results_string)
+    return ret
+
+def get_accts_by_legal_by_pid__t_r_s_subid_block_lot(legal):
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    print('get_accts_by_legal_by_pid__t_r_s_subid_block_lot(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+
+    ret=[]
+    data=None
+    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('pull down: "Parcel Id"')
+    if t and r and s:
+#         print('pb: ' + pb)
+#         print('pg: ' + pg)
+
+#         print('lot: ' + lot)
+
+        print('t: ' + t)
+        print('r: ' + r)
+        print('s: ' + s)
+
+        subid_str = ''
+        if subid:
+            print('subid: ' + subid)
+            subid_str = str(subid)
+
+        blk_str = convertBlock(block)
+        if not blk_str:
+            blk_str = ''
+
+        lot_str = convertLot(lot)
+
+
+#         print('subid: ' + subid)
+        print('block: ' + blk_str)
+        print('lot: ' + lot_str)
+        data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+subid_str+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+
+        bcpao_results_string = get_bcpao_results_string(data)
+        ret = get_results_from_bcpao_results_string(bcpao_results_string)
+    return ret
+
+def get_acct_by_legal_by_sub__sub_pg_lot(legal):
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    print('get_acct_by_legal_by_sub(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
+    ret=''
+
+    url = 'https://www.bcpao.us/asp/find_property.asp'
+    headers = {
+        # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
+        'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
+        'Content-Type': 'application/x-www-form-urlencoded'
+        }
+    if not ret:
+        data=None
+        offset=82
+#         if pb is not None and pg is not None and lot is not None and block is not None:
+#             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#             offset=86
+        if pg is not None:
+            data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # r = requests.post(url, data, stream=True)
+        req = requests.post(url, headers=headers, data=data)
+        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # print(the_url)
+        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+        # print_headers(the_url, 'html.parser')
+        rers_cell = soup.find(text="Real Estate Records Search")
+
+#         for a in soup.find_all('a'):
+#             pprint.pprint(a)
+        aerials = soup.find_all('a', text="Aerial")
+        if aerials and len(aerials) > 1:
+            # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
+            print('ignoring this whole page because we have more than one result (tax ids)')
+            rers_cell = None
+        # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+        # print_headers(soup, 'Real Estate Records Search')
+        if rers_cell is not None:
+            # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
+        # print(bi_cell.parent.parent.parent.parent)
+        # # print(list(bi_cell.parent.parent.parent.parent.descendants))
+        # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
+            # try:
+                # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
+            # except:
+                # pass
+            # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
+            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
+    return ret
+
+def get_acct_by_legal(legal):
+    use_local_logging_config = False
+    if use_local_logging_config:
+        logging.basicConfig(format='%(asctime)s %(module)-15s %(levelname)s %(message)s', level=logging.DEBUG)
+    #     logging.getLogger().setLevel(logging.DEBUG)
+        logger = logging.getLogger(__name__)
+        logger.info('START')
+    sub, lot, block, pb, pg, s, t, r, subid = legal
+    sub = sub.replace(u'\xc2', u'').encode('utf-8')
+    logging.info('get_acct_by_legal(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
     ret=''
 
     url = 'https://www.bcpao.us/asp/find_property.asp'
@@ -641,6 +904,36 @@ def print_headers(the_url, parser_name=None):
     # print(texts)
     for t in texts:
         print(t.ljust(28)+': '+str(soup.find(text=t)))
+
+def fill_bcpao_from_legal(mr):
+    legal = mr.item['legal']
+    if 'subd' in legal:
+        acc = get_acct_by_legal((legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid']))
+        # logging.debug('a: ' + (str(acc) if acc else 'None'))
+        mr.item['bcpao_acc'] = acc
+        mr.item['bcpao_item'] = get_bcpaco_item(acc)
+    #mr.item['bcpao_radius'] = bcpao_radius.get_average_from_radius(mr.item['bcpao_acc'])
+    # logging.debug('asdfasd 1.5 ' + pprint.pformat(mr.item))
+    legals = mr.item['legals']
+    # logging.debug('legals: ' + pprint.pformat(legals))
+    # logging.debug('** * * ****   4563456')
+    mr.item['bcpao_accs'] = []
+    for i, l in enumerate(legals):
+        # logging.debug(pprint.pformat(l))
+        acc = None
+        if 't' in l:
+            acc = get_acct_by_legal((l['subd'], l['lt'], l['blk'], l['pb'], l['pg'], l['s'], l['t'], l['r'], l['subid']))
+            mr.item['bcpao_accs'].append(acc)
+            if 'bcpao_acc' not in mr.item:
+                mr.item['bcpao_acc'] = acc
+                mr.item['bcpao_item'] = get_bcpaco_item(acc)
+                # logging.debug('choosing a secondary legal description because it gave a bcpao_acc')
+        # logging.debug(str(i) + ': ' + ('None' if not acc else str(acc)))
+
+    # logging.debug('asdfasd 222 ' + pprint.pformat(mr.item))
+
+def get_legal_tuple(legal):
+    return (legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid'])
 
 def main():
     # Year Built, Frame Code, Total Base Area

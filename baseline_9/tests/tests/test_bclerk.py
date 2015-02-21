@@ -162,6 +162,15 @@ class Test(unittest.TestCase):
 #         legal_str = 'LT 14 PB 1 PG 165 FLORIDA INDIAN RIVER LAND CO E 230 FT OF N 1/4 S 23 T 29 R 37'
         legal=jac.bclerk.get_legal_by_case("05-2013-CA-037340-XXXX-XX")
         print('legal='+str(legal))
+        
+    def test_bclerk_2(self):
+        ret=jac.bclerk.get_legal_by_case('05-2009-CA-014066-')
+#         print('rets='+str(rets))
+        pprint.pprint(ret)
+        
+        rets=jac.bclerk.get_legals_by_case('05-2009-CA-014066-')
+#         print('rets='+str(rets))
+        pprint.pprint(rets)
 
 
 

@@ -2,6 +2,8 @@ from BeautifulSoup import BeautifulSoup
 from mechanize import ParseResponse, urlopen
 import re
 import itertools
+import logging
+import pprint
 
 
 
@@ -39,18 +41,49 @@ def get_legal_by_case(case):
         if row['First Legal'] and len(row['First Legal']) > 0:
             lds.append(row['First Legal'])
     ret['legal_description']='; '.join(lds).strip()
-    # print(bi_cell)
-    for ld in lds:
+#     print('ret[legal_description]: ' + ret['legal_description'])
+    for i,ld in enumerate(lds):
         # print(b.strip())
-        temp = get_legal_from_str(ld.strip())
+        legal_desc = ld.strip()
+        temp = get_legal_from_str(legal_desc)
         if temp:
             ret = dict(itertools.chain(ret.items(), temp.items()))
+            if i < (len(lds) - 1):
+                the_str = 'choosing a legal description (index='
+                the_str += str(i)
+                the_str += ':'+legal_desc
+                the_str += ') before going through all of them(total='
+                the_str += str(len(lds))
+                the_str += '): '
+                # logging.info(the_str)
+                # pprint.pprint(lds)
             break
 #     print(ret)
     return ret
 
+def get_legals_by_case(case):
+    print('get_legals_by_case("'+case+'")')
+    rets=[]
+
+
+    rows = get_records_grid_for_case_number(case)
+    lds = []
+    for row in rows:
+        if row['First Legal'] and len(row['First Legal']) > 0:
+            lds.append(row['First Legal'])
+    #ret['legal_description']='; '.join(lds).strip()
+    for i,ld in enumerate(lds):
+        # print(b.strip())
+        legal_desc = ld.strip()
+        temp = get_legal_from_str(legal_desc)
+        if temp:
+            rets.append(dict(temp.items()))
+#     print(ret)
+    return rets
+
 def get_legal_from_str(the_str):
-    print('get_legal_from_str('+the_str.replace(u'\xc2',u'')+')')
+    legal_desc = the_str.replace(u'\xc2',u'')
+    print('get_legal_from_str('+legal_desc+')')
     ret={}
 
     m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
@@ -60,6 +93,7 @@ def get_legal_from_str(the_str):
         # print(m.group('blk'))
         # return m.groupdict()
         ret = dict(itertools.chain(ret.items(), m.groupdict().items()))
+
         # print(m.group(1)+','+m.group(2)+','+m.group(3))
         # ret['lt']=m.group(1)
         # ret['blk']=m.group(2)
@@ -68,6 +102,7 @@ def get_legal_from_str(the_str):
     elif 'condo'.upper() in the_str.upper():
         ret['condo']=True
 #     print('ret='+str(ret))
+    ret['legal_desc']=legal_desc
     return ret
 
 def get_records_grid_for_case_number(case_number):

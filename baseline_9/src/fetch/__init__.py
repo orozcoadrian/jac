@@ -1,6 +1,9 @@
 import re
 from jac.cfm import cfm
 from jac import bclerk, bcpao, bcpao_radius,db,tax
+import pprint
+import logging
+
 class Fetcher(object):
     def get_name(self):
         return 'Fetcher'
@@ -33,18 +36,16 @@ class Legal(Fetcher):
     def fetch(self, mr):
         legal=bclerk.get_legal_by_case(mr.item['case_number'])
         mr.item['legal'] = legal
+        legals=bclerk.get_legals_by_case(mr.item['case_number'])
+        mr.item['legals'] = legals
+        # logging.debug('asdfasd 111 '+pprint.pformat(mr.item))
 
 class Bcpao(Fetcher):
     def get_name(self):
         return 'Bcpao'
+
     def fetch(self, mr):
-        legal=mr.item['legal']
-        if 'subd' in legal:
-            acc=bcpao.get_acct_by_legal((legal['subd'],legal['lt'],legal['blk'],legal['pb'],legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid']))
-            # print(acc)
-            mr.item['bcpao_acc']=acc
-            mr.item['bcpao_item'] = bcpao.get_bcpaco_item(acc)
-            #mr.item['bcpao_radius'] = bcpao_radius.get_average_from_radius(mr.item['bcpao_acc'])
+        bcpao.fill_bcpao_from_legal(mr)
 
 class Bcpao_db(Fetcher):
     def get_name(self):
@@ -58,7 +59,7 @@ class Bcpao_db(Fetcher):
                 mr.item['bcpao_db_acc']=db_item['TaxAcct']
                 mr.item['bcpao_db_item'] = db_item
             #mr.item['bcpao_radius'] = bcpao_radius.get_average_from_radius(mr.item['bcpao_acc'])
-            
+
 class Taxes(Fetcher):
     def get_name(self):
         return 'Taxes'
@@ -77,6 +78,6 @@ class Taxes(Fetcher):
                 display_str = display_str.replace('$', '').replace(',', '')
                 value_to_use = display_str
                 url_to_use = tax.get_tax_url_from_taxid(the_str)
-                
+
         mr.item['taxes_value'] = value_to_use
         mr.item['taxes_url'] = url_to_use

@@ -8,6 +8,7 @@ import jac.bclerk
 import jac.bcpao
 import pprint
 from BeautifulSoup import BeautifulSoup
+import logging
 
 class Test(unittest.TestCase):
 
@@ -185,6 +186,55 @@ class Test(unittest.TestCase):
 #         the_address = self.get_address_from_cn(cn_str)
 #         print('addr='+str(the_address))
 
+    def test_condo_1(self):
+        logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
+        logging.getLogger().setLevel(logging.DEBUG)
+        # 05-2009-CA-014066-
+        print(self.get_address_from_cn('05-2009-CA-014066-'))
+        
+    def test5(self):
+        cases = []
+        cases.append('05-2008-CA-018262-')
+        cases.append('05-2008-CA-065237-')
+        cases.append('05-2009-CA-014066-')
+        cases.append('05-2012-CA-061930-')
+        cases.append('05-2012-CA-062814-')
+        cases.append('05-2012-CA-066773-')
+        cases.append('05-2013-CA-027773-')
+        cases.append('05-2013-CA-028461-')
+        cases.append('05-2013-CA-035656-')
+        cases.append('05-2013-CA-037340-')
+        cases.append('05-2013-CA-038768-')
+        cases.append('05-2013-CA-042443-')
+        cases.append('05-2014-CA-013087-')
+        cases.append('05-2014-CA-017270-')
+        cases.append('05-2014-CA-023885-')
+        cases.append('05-2014-CA-026839-')
+        cases.append('05-2014-CA-026879-')
+        cases.append('05-2014-CA-028045-')
+        cases.append('05-2014-CA-028736-')
+        for c in cases:
+            legals=jac.bclerk.get_legals_by_case(c)
+            for l in legals:
+                pprint.pprint(l)
+                run_new_bcpao(l['legal_desc'])
+
+def run_new_bcpao(legal_desc_str):
+    legal = jac.bclerk.get_legal_from_str(legal_desc_str)
+    if 'condo' in legal and legal['condo']:
+        print('skipping condo: ' + legal_desc_str)
+    elif 'subd' not in legal:
+        print('skipping non-subd: ' + legal_desc_str)
+    else:
+        print '>legal ' + legal_desc_str
+        print('>sub_pg_lot '+str(len(jac.bcpao.get_accts_by_legal_by_sub__sub_pg_lot(jac.bcpao.get_legal_tuple(legal)))))
+        print('>subname_lot_block '+str(len(jac.bcpao.get_accts_by_legal_by_sub__subname_lot_block(jac.bcpao.get_legal_tuple(legal)))))
+        print('>plat_lot_block '+str(len(jac.bcpao.get_accts_by_legal_by_plat__pb_pg_lot_block(jac.bcpao.get_legal_tuple(legal)))))
+        
+        pid_accs = jac.bcpao.get_accts_by_legal_by_pid__t_r_s_subid_block_lot(jac.bcpao.get_legal_tuple(legal))
+        print('>pid '+str(len(pid_accs)))
+        if len(pid_accs) == 1:
+            print('>the_pid: ' + str(pid_accs[0]))
 
 
 
