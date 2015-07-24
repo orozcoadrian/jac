@@ -7,7 +7,7 @@ import unittest
 import jac.bclerk
 import jac.bcpao
 import pprint
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 import logging
 
 class Test(unittest.TestCase):

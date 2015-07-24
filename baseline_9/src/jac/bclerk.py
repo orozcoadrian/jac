@@ -1,4 +1,4 @@
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from mechanize import ParseResponse, urlopen
 import re
 import itertools
@@ -22,7 +22,7 @@ def get_bclerk_results_text(case):
 
 def get_bclerk_results_soup(case):
     bclerk_results_text = get_bclerk_results_text(case)
-    soup = BeautifulSoup(bclerk_results_text)
+    soup = BeautifulSoup(bclerk_results_text, "lxml")
     return soup
 
 def get_legal_by_case(case):
@@ -60,6 +60,7 @@ def get_legal_by_case(case):
             break
 #     print(ret)
     return ret
+
 
 def get_legals_by_case(case):
     print('get_legals_by_case("'+case+'")')
@@ -128,9 +129,9 @@ def get_records_grid_for_case_number(case_number):
 #                 print ' c' + str(c) + '===' + str(d).replace("\n", "").replace("\r", "").replace("\t", "")
                 key = None
                 if r == 1:
-                    col_names.append(d.text)
+                    col_names.append(d.get_text(strip=True))
                 else:
-                    current_item[col_names[c]] = d.text
+                    current_item[col_names[c]] = d.get_text(strip=True)
             if r > 1:
                 items.append(current_item)
 

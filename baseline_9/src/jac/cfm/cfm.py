@@ -99,7 +99,7 @@ def get_reg_actions_dataset(r_text):
 #     print(r_text[0:len(r_text)/2])
 #     soup = BeautifulSoup(r_text)
 #     soup = BeautifulSoup(r_text.encode('utf-8'), 'html.parser')
-    soup = BeautifulSoup(r_text.encode('utf-8'), 'html5lib')
+    soup = BeautifulSoup(r_text.encode('utf-8'), 'lxml')
 #     print soup.prettify()
 #     print('case number: ' + soup.title.text)
 #     print('case title: ' + soup.find_all('font', color='Blue')[0].text)

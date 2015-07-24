@@ -1,6 +1,6 @@
 #import sys
 #import os
-import requests
+
 #from time import strftime
 import re
 import pprint
@@ -18,6 +18,23 @@ import unittest
 import bclerk
 import logging
 
+# http://askubuntu.com/questions/116020/python-https-requests-urllib2-to-some-sites-fail-on-ubuntu-12-04-without-proxy
+import ssl
+ssl.PROTOCOL_SSLv23 = ssl.PROTOCOL_TLSv1
+
+# http://stackoverflow.com/questions/30904815/having-ssl-problems-with-requests-get-in-python     and     http://docs.python-requests.org/en/latest/user/advanced/
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.poolmanager import PoolManager
+import ssl
+
+class MyAdapter(HTTPAdapter):
+    def init_poolmanager(self, connections, maxsize, block=False):
+        self.poolmanager = PoolManager(num_pools=connections,
+                                       maxsize=maxsize,
+                                       block=block,
+                                       ssl_version=ssl.PROTOCOL_TLSv1)
+
+import requests
 
 def get_use_code_str(use_code):
     #https://www.bcpao.us/asp/Show_code.asp?numeric=t&table=UseCodes&ValColName=UseCode&DescColName=UseDesc&value=110
@@ -365,7 +382,7 @@ def get_acct_by_legal(legal):
         elif pg is not None:
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
-        req = requests.post(url, headers=headers, data=data)
+        req = requests.post(url, headers=headers, data=data, verify=False)
         # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
@@ -536,11 +553,11 @@ def get_bcpaco_item(acct):
 
     # print(str(r.text.encode('utf-8'))[8000:9000])
     # print(str(r.text))
-    the_url="https://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
+    the_url="http://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
 
-
+    print(the_url)
     try:
-        soup = BeautifulSoup(urlopen(the_url))
+        soup = BeautifulSoup(urlopen(the_url), 'lxml')
         # print(soup.prettify())
         #gpc = soup.find(text="General Parcel Information")
         # print_small_texts(list(soup.descendants), max=500)

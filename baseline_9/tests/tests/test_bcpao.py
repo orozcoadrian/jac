@@ -233,7 +233,7 @@ class Test(unittest.TestCase):
         self.assertEqual(i['frame code'] , '03')
         self.assertEqual(i['year built'] , '1974')
         # self.assertEqual(i['sq feet'] , '1,256')
-        self.assertEqual(i['total base area'] , '1,545')
+        self.assertEqual(i['total base area'] , '1,541')
 
     def test_convertBlock(self):
         self.assertEqual(jac.bcpao.convertBlock('20U'), '20.U')
@@ -346,7 +346,7 @@ class Test(unittest.TestCase):
         self.assertEqual(
                             [{'acct': u'2413784',
                               'addr': '2821 N INDIAN RIVER DR ',
-                              'name': 'HOANG, DUYET & NGUYEN, PHUC T H/W',
+                              'name': 'BANK OF NEW YORK MELLON TRUSTEE & C/O NATIONSTAR MORTGAGE LLC',
                               'pid': '24-36-17-52-00000.0-0001.A1'},
                              {'acct': u'2442308',
                               'addr': '',
@@ -366,7 +366,7 @@ class Test(unittest.TestCase):
         pprint.pprint(ret)
         self.assertEqual([{'acct': u'2808394',
                               'addr': '792 NW NIAGARA ST ',
-                              'name': 'GAMBINO, JAMES A III',
+                              'name': 'CHRISTIANA TRUST TRUSTEE',
                               'pid': '28-36-26-KR-02514.0-0007.00'}],
                          ret)
 
