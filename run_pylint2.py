@@ -24,8 +24,7 @@ def check(module):
     if module[-3:] == ".py":
 
         print "CHECKING ", module
-        this_item = {}
-        this_item['module']=module
+        this_item = {'module': module}
         pout = os.popen('pylint %s'% module, 'r')
         for line in pout:
             if  re.match("E....:.", line):

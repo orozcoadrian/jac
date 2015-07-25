@@ -84,7 +84,7 @@ def get_legals_by_case(case):
 
 def get_legal_from_str(the_str):
     legal_desc = the_str.replace(u'\xc2',u'')
-    print('get_legal_from_str('+legal_desc+')')
+    logging.info('get_legal_from_str('+legal_desc+')')
     ret={}
 
     m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)

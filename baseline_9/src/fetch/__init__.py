@@ -1,6 +1,7 @@
 import re
 from jac.cfm import cfm
-from jac import bclerk, bcpao, bcpao_radius,db,tax
+from jac import bclerk, bcpao, bcpao_radius,tax
+# import db
 import pprint
 import logging
 

@@ -403,6 +403,21 @@ class Test(unittest.TestCase):
         self.assertEqual('32901', mr.item['bcpao_item']['zip_code'])
 
 
+    def test_111(self):
+        sub=" SOUTH PATRICK SHORES 1ST SEC"
+        lot=19
+        block=4
+        pb=11
+        pg=48
+        s=23
+        t=26
+        r=37
+        subid=75
+        legal = sub, lot, block, pb, pg, s, t, r, subid
+        acct = jac.bcpao.get_acct_by_legal(legal)
+        print('acct='+acct)
+
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()
