@@ -204,7 +204,18 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
         logging.info('count_id: ' + str(r.item['count']))
         for f in fetchers:
             logging.info(f.get_name())
-            f.fetch(r)
+            done = False
+            retries_count = 0
+            while not done and retries_count < 100:
+                try:
+                    f.fetch(r)
+                    done = True
+                except Exception as e:
+                    logging.error(' got an error when fetching: ' + str(e))
+                    logging.error(' retrying...')
+                    retries_count += 1
+                    logging.error(' retries_count: ' + str(retries_count))
+                    time.sleep(5)
     logging.info('fetch complete')
     logging.info('num records: '+str(len(mrs.get_records())))
 #     pprint.pprint(mrs.get_records())

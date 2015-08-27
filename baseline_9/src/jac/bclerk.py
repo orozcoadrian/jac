@@ -4,6 +4,7 @@ import re
 import itertools
 import logging
 import pprint
+import time
 
 
 
@@ -17,6 +18,7 @@ def get_bclerk_results_text(case):
     form["SearchType"] = 'casenumber' #"orozco"
     form["txtDocTypes"] = ''#'JRP, J' #"orozco"
 # form["txtName"] = "orozco"
+#     time.sleep(1)
     bclerk_results_text = urlopen(form.click()).read()
     return bclerk_results_text
 

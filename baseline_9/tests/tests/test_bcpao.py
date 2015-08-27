@@ -20,7 +20,7 @@ class Test(unittest.TestCase):
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2807459&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
         pprint.pprint(i)
         self.assertEqual(i['address'] , '1123 FLOWER ST NW , PALM BAY 32907')
-        self.assertEqual(i['latest market value total'] , '$49,910')
+        self.assertEqual(i['latest market value total'] , '$56,530')
         self.assertEqual(i['zip_code'] , '32907')
         self.assertEqual(i['frame code'] , '04')
         self.assertEqual(i['year built'] , '1985')
@@ -37,7 +37,7 @@ class Test(unittest.TestCase):
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2630481&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
         pprint.pprint(i)
         self.assertEqual(i['address'] , '7667 N WICKHAM RD  1009, MELBOURNE 32940')
-        self.assertEqual(i['latest market value total'] , '$83,000')
+        self.assertEqual(i['latest market value total'] , '$91,300')
         self.assertEqual(i['zip_code'] , '32940')
         # self.assertEqual(i['frame code'] , '04')
         #self.assertEqual(i['year built'] , '1990') # broken
@@ -49,9 +49,9 @@ class Test(unittest.TestCase):
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2861697&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
         pprint.pprint(i)
         self.assertEqual(i['address'] , '510  TORTUGA WAY , WEST MELBOURNE 32904')
-        self.assertEqual(i['latest market value total'] , '$150,810')
+        self.assertEqual(i['latest market value total'] , '$165,690')
         self.assertEqual(i['zip_code'] , '32904')
-        self.assertEqual(i['frame code'] , '03, 04')
+        self.assertEqual(i['frame code'] , '03')
         self.assertEqual(i['year built'] , '2006') # broken
 #         self.assertEqual(i['sq feet'] , '2,862') # broken
         self.assertEqual(i['total base area'] , '2,862')
@@ -216,24 +216,35 @@ class Test(unittest.TestCase):
     def test_one(self):
         i=jac.bcpao.get_bcpaco_item('2724389')
         pprint.pprint(i)
-        self.assertEqual(i['address'] , '800  BALLARD DR , MELBOURNE 32935')
-        self.assertEqual(i['latest market value total'] , '$76,150')
-        self.assertEqual(i['zip_code'] , '32935')
-        self.assertEqual(i['frame code'] , '03')
-        self.assertEqual(i['year built'] , '1951')
+        self.assertEqual( '800  BALLARD DR , MELBOURNE 32935', i['address'])
+        self.assertEqual( '$88,250', i['latest market value total'])
+        self.assertEqual( '32935', i['zip_code'] )
+        self.assertEqual( '03', i['frame code'] )
+        self.assertEqual( '1951', i['year built'] )
         # self.assertEqual(i['sq feet'] , '1,256')
-        self.assertEqual(i['total base area'] , '1,381') # changed from 1,272 on 2/20/15, verified online. not sure why it's different now.
+        self.assertEqual( '1,381', i['total base area']) # changed from 1,272 on 2/20/15, verified online. not sure why it's different now.
 
     def test_2613083(self):
         i=jac.bcpao.get_bcpaco_item('2613083')
         pprint.pprint(i)
-        self.assertEqual(i['address'] , '320  LEE AVE , SATELLITE BEACH 32937')
-        self.assertEqual(i['latest market value total'] , '$150,850')
+        self.assertEqual('320  LEE AVE , SATELLITE BEACH 32937', i['address'])
+        self.assertEqual('$174,900', i['latest market value total'])
+        self.assertEqual('32937', i['zip_code'])
+        self.assertEqual('03', i['frame code'])
+        self.assertEqual('1974', i['year built'])
+        # self.assertEqual(i['sq feet'] , '1,256')
+        self.assertEqual('1,541', i['total base area'])
+
+    def test_2713420(self):
+        i=jac.bcpao.get_bcpaco_item('2713420')
+        pprint.pprint(i)
+        self.assertEqual(i['address'] , '1122  CHEYENNE DR , INDIAN HARBOUR BEACH 32937')
+        self.assertEqual(i['latest market value total'] , '$194,480')
         self.assertEqual(i['zip_code'] , '32937')
         self.assertEqual(i['frame code'] , '03')
-        self.assertEqual(i['year built'] , '1974')
+        self.assertEqual(i['year built'] , '1963')
         # self.assertEqual(i['sq feet'] , '1,256')
-        self.assertEqual(i['total base area'] , '1,541')
+        self.assertEqual(i['total base area'] , '1,989')
 
     def test_convertBlock(self):
         self.assertEqual(jac.bcpao.convertBlock('20U'), '20.U')
@@ -346,7 +357,7 @@ class Test(unittest.TestCase):
         self.assertEqual(
                             [{'acct': u'2413784',
                               'addr': '2821 N INDIAN RIVER DR ',
-                              'name': 'BANK OF NEW YORK MELLON TRUSTEE & C/O NATIONSTAR MORTGAGE LLC',
+                              'name': 'BUCHANAN, JAMES & BUCHANAN, JONNAH',
                               'pid': '24-36-17-52-00000.0-0001.A1'},
                              {'acct': u'2442308',
                               'addr': '',
@@ -397,7 +408,7 @@ class Test(unittest.TestCase):
         pprint.pprint(mr.item)
         self.assertEqual('2865226', mr.item['bcpao_acc'])
         self.assertEqual("3501  D'AVINCI WAY UNIT 1021, MELBOURNE 32901", mr.item['bcpao_item']['address'])
-        self.assertEqual('$50,610', mr.item['bcpao_item']['latest market value total'])
+        self.assertEqual('$80,480', mr.item['bcpao_item']['latest market value total'])
 #         self.assertEqual('972', mr.item['bcpao_item']['sq feet'])  # need to fix this. getting '<td>\xc2\xa02006</td>' instead
 #         self.assertEqual('1955', mr.item['bcpao_item']['year built'])  # need to fix this. getting '<td align="center" rowspan="1">\xc2\xa0</td>' instead
         self.assertEqual('32901', mr.item['bcpao_item']['zip_code'])
@@ -413,6 +424,20 @@ class Test(unittest.TestCase):
         t=26
         r=37
         subid=75
+        legal = sub, lot, block, pb, pg, s, t, r, subid
+        acct = jac.bcpao.get_acct_by_legal(legal)
+        print('acct='+acct)
+
+    def test_112(self):
+        sub="P M FIVE LOTS"
+        lot=10
+        block=None
+        pb=26
+        pg=96
+        s=27
+        t=28
+        r=37
+        subid=77
         legal = sub, lot, block, pb, pg, s, t, r, subid
         acct = jac.bcpao.get_acct_by_legal(legal)
         print('acct='+acct)

@@ -23,9 +23,9 @@ def get_next_thu_offset(adate):
 
 def get_next_dates(from_date):
     ret= []
-    weeks_num=4
+    weeks_num=6
     ret.extend([get_next_wed_offset(from_date+ timedelta(weeks=x)) for x in range(0,weeks_num)])
-    ret.extend([get_next_thu_offset(from_date+ timedelta(weeks=x)) for x in range(0,weeks_num)])
+    # ret.extend([get_next_thu_offset(from_date+ timedelta(weeks=x)) for x in range(0,weeks_num)])
     ret.sort()
     return ret
 

@@ -7,6 +7,7 @@ import unittest
 import datetime
 from datetime import date
 import jac.mydate
+import pprint
 
 
 class Test(unittest.TestCase):
@@ -23,15 +24,17 @@ class Test(unittest.TestCase):
         print(jac.mydate.get_next_weekday(date.today(), 3).strftime("%A %d. %B %Y"))# thu
 
     def testNextDates(self):
-        print(jac.mydate.get_next_dates(date(2014, 10, 11)))
-        ret = jac.mydate.get_next_dates(date(2014, 10, 17))
-        self.assertEqual(ret[0], datetime.date(2014, 10, 22))
-        self.assertEqual(ret[1], datetime.date(2014, 10, 23))
-
-        ret = jac.mydate.get_next_dates(date(2014, 10, 21))
-        self.assertEqual(ret[0], datetime.date(2014, 10, 22))
-        self.assertEqual(ret[1], datetime.date(2014, 10, 23))
-
+        d = date(2015, 8, 9)
+        print('get_next_dates: input: ' + str(d))
+        ret = jac.mydate.get_next_dates(d)
+        pprint.pprint(ret)
+        mystr = pprint.pformat(ret)
+        self.assertEqual('''[datetime.date(2015, 8, 12),
+ datetime.date(2015, 8, 19),
+ datetime.date(2015, 8, 26),
+ datetime.date(2015, 9, 2),
+ datetime.date(2015, 9, 9),
+ datetime.date(2015, 9, 16)]''', mystr)
 
 
 

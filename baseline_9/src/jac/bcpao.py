@@ -36,6 +36,7 @@ from urllib2 import urlopen
 import unittest
 import bclerk
 import logging
+import time
 
 
 
@@ -385,6 +386,7 @@ def get_acct_by_legal(legal):
         elif pg is not None:
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
+        # time.sleep(1)
         req = requests.post(url, headers=headers, data=data, verify=False)
         # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
@@ -559,8 +561,12 @@ def get_bcpaco_item(acct):
     the_url="http://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
 
     print(the_url)
+    f = urlopen(the_url)
+    html = f.read().replace(u'\xa0', u'').encode('utf-8')
+    soup = BeautifulSoup(html, 'lxml')
     try:
-        soup = BeautifulSoup(urlopen(the_url), 'lxml')
+        # time.sleep(1)
+
         # print(soup.prettify())
         #gpc = soup.find(text="General Parcel Information")
         # print_small_texts(list(soup.descendants), max=500)
@@ -577,49 +583,52 @@ def get_bcpaco_item(acct):
         raise
 
     try:
-        with closing(urlopen(the_url)) as f:
-            html = f.read().replace(u'\xa0', u'').encode('utf-8')
-            filtered=[]
-            for l in html.split('\n'):
-                if 'javascript:void(0);' not in l and 'px;"' not in l and '&nbsp;' not in l:
-                    to_append=l.replace(u'\xa0', u'').encode('utf-8')
-                    filtered.append(to_append)
-                    # print(to_append)
-                # else:
-                    # print('filtering: '+l)
-            data=''.join(filtered)
-            soup = BeautifulSoup(data, 'html.parser')
-        # soup = BeautifulSoup(urlopen(the_url))
-        # print(soup.prettify())
-            vs_cell = soup.find(text="Value Summary")
-            # print_small_texts(list(soup.descendants), max=50)
-        # print_headers(the_url, 'html.parser')
-        # print_headers(the_url, 'html5lib')
-            # print(str(soup.find(text='110')))
-        # print(BeautifulSoup(urlopen(the_url)).prettify())
-        # sa = soup.find(text="Site Address:")
-            if vs_cell is not None:
-                # print_small_texts(list(vs_cell.parent.parent.parent.parent.descendants))
-            # # # for index,item in enumerate(list(gpc.parent.parent.parent.descendants)):
+        # time.sleep(1)
+        # with closing(urlopen(the_url)) as f:
+        html = f.read().replace(u'\xa0', u'').encode('utf-8')
+        filtered=[]
+        for l in html.split('\n'):
+            if 'javascript:void(0);' not in l and 'px;"' not in l and '&nbsp;' not in l:
+                to_append=l.replace(u'\xa0', u'').encode('utf-8')
+                filtered.append(to_append)
+                # print(to_append)
+            # else:
+                # print('filtering: '+l)
+        data=''.join(filtered)
+        # soup = BeautifulSoup(html, 'lxml')
+    # soup = BeautifulSoup(urlopen(the_url))
+    #     print('test test test adrian ' + data)
+    #     print(soup.prettify())
+        # print('one two three')
+        vs_cell = soup.find(text="Value Summary")
+        # print_small_texts(list(soup.descendants), max=50)
+    # print_headers(the_url, 'html.parser')
+    # print_headers(the_url, 'html5lib')
+        # print(str(soup.find(text='110')))
+    # print(BeautifulSoup(urlopen(the_url)).prettify())
+    # sa = soup.find(text="Site Address:")
+        if vs_cell is not None:
+            # print_small_texts(list(vs_cell.parent.parent.parent.parent.descendants))
+        # # # for index,item in enumerate(list(gpc.parent.parent.parent.descendants)):
+            # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
+            # # # if str(item).startswith('7667'):
                 # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
-                # # # if str(item).startswith('7667'):
-                    # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
-                ret['latest market value total']=str(list(vs_cell.parent.parent.parent.parent.descendants)[35])
-            # ret['zip_code']=ret['address'][-5:]
+            ret['latest market value total']=str(list(vs_cell.parent.parent.parent.parent.descendants)[38])
+        # ret['zip_code']=ret['address'][-5:]
 
-            bi_cell = soup.find(text="Building Information")
-            # print(bi_cell)
-            if bi_cell is not None:
-                # print_small_texts(list(bi_cell.parent.parent.parent.parent.parent.descendants))
-                use_code=list(bi_cell.parent.parent.parent.parent.parent.descendants)[52].encode('utf-8')
-                ret['use code']=dict(use_code=use_code, use_code_str=get_use_code_str(use_code))
-                ret['year built']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[56])
-                ret['frame code']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[65])
+        bi_cell = soup.find(text="Building Information")
+        # print(bi_cell)
+        if bi_cell is not None:
+            # print_small_texts(list(bi_cell.parent.parent.parent.parent.parent.descendants))
+            use_code=list(bi_cell.parent.parent.parent.parent.parent.descendants)[52].encode('utf-8')
+            ret['use code']=dict(use_code=use_code, use_code_str=get_use_code_str(use_code))
+            ret['year built']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[56])
+            ret['frame code']=str(list(bi_cell.parent.parent.parent.parent.parent.descendants)[65])
 
-            bai_cell = soup.find(text="Building Area Information")
-            if bai_cell is not None:
-                # print_small_texts(list(bai_cell.parent.parent.parent.parent.parent.descendants))
-                ret['total base area']=str(list(bai_cell.parent.parent.parent.parent.parent.descendants)[59])
+        bai_cell = soup.find(text="Building Area Information")
+        if bai_cell is not None:
+            # print_small_texts(list(bai_cell.parent.parent.parent.parent.descendants))
+            ret['total base area']=str(list(bai_cell.parent.parent.parent.parent.descendants)[93])
     except:
         raise
 
@@ -627,108 +636,109 @@ def get_bcpaco_item(acct):
 
     try:
         if 'latest market value total' not in ret:
-            with closing(urlopen(the_url)) as f:
-                soup = BeautifulSoup(f, "html.parser")
-                mvt = soup.find(text="Market Value Total:")
-                # for index,item in enumerate(list(mvt.parent.parent.descendants)):
-                    # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
-                if mvt:
-                    ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
+            # with closing(urlopen(the_url)) as f:
+            soup = BeautifulSoup(html, "html.parser")
+            mvt = soup.find(text="Market Value Total:")
+            # for index,item in enumerate(list(mvt.parent.parent.descendants)):
+                # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
+            if mvt:
+                ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
 
         if 'latest market value total' not in ret:
-            with closing(urlopen(the_url)) as f:
-                html = f.read().replace(u'\xa0', u'').encode('utf-8')
-                filtered=[]
-                for l in html.split('\n'):
-                    if 'Homestead' not in l and 'tdHeader_Row_1_Col_1' not in l:
-                        filtered.append(l.replace(u'\xa0', u'').encode('utf-8'))
-                    # else:
-                        # print('filtering: '+l)
-                soup = BeautifulSoup(''.join(filtered), "html5lib")
-                mvt = soup.find(text="Market Value Total:")
-                # print(soup.find(text="General Parcel Information"))
-                # print(soup.find(text="Owner Information"))
-                # print(soup.find(text="Owner Name:"))
-                # print(soup.find(text="Second  Name:"))
-                # print(soup.find(text="Mailing Address:"))
-                # print(soup.find(text="City, State, Zipcode:"))
-                # print(soup.find(text="Taxable Value School:"))
-                # print(soup.find(text="Roll Year:"))
-                # print(soup.find(text="Sale Information"))
-                # print(soup.find(text="Sale Date"))
-                # print(soup.find(text="Land Information"))
-                # print(soup.find(text="Acres"))
-                # print(soup.find(text="Millage Code:"))
-                # print(soup.find(text="Exemption:"))
-                # print(soup.find(text="Use Code:"))
-                # print(soup.find(text="Site Address:"))
-                # print(soup.find(text="Tax ID:"))
-                #pi = soup.find(text="Tax ID:")
-                # print(pi)
-                # print(soup.find(text="Owner Name:"))
-                # print(soup.find(text="Roll Year:"))
-                # print(soup.find(text="Assessed Value School:"))
-                # for index,item in enumerate(list(pi.parent.parent.parent.parent.parent.descendants)):
-                    # print('list(pi.parent.parent.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
-                # for index,item in enumerate(list(soup.descendants)):
-                    # print('\n\n\n\n\n\n\n\n\nlist(soup.descendants)['+str(index)+']: '+str(item))
-                # b=list(soup.descendants)[26]
-                # c=list(b.descendants)[9]
-                # for index,item in enumerate(list(b.descendants)):
-                    # print('list(\n\n\n\n\n\n\n b.descendants)['+str(index)+']: '+str(item))
-                    # if '$' in str(item):
-                        # print('['+str(index)+']: '+str(item))
-                    # if str(item).startswith('$'):
-                        # print('list(pi.parent.parent.descendants)['+str(index)+']: '+str(item))
-                # if mvt:
-                    # ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
+            # with closing(urlopen(the_url)) as f:
+            #     html = f.read().replace(u'\xa0', u'').encode('utf-8')
+            filtered=[]
+            for l in html.split('\n'):
+                if 'Homestead' not in l and 'tdHeader_Row_1_Col_1' not in l:
+                    filtered.append(l.replace(u'\xa0', u'').encode('utf-8'))
+                # else:
+                    # print('filtering: '+l)
+            soup = BeautifulSoup(''.join(filtered), "lxml")
+            mvt = soup.find(text="Market Value Total:")
+            # print(soup.find(text="General Parcel Information"))
+            # print(soup.find(text="Owner Information"))
+            # print(soup.find(text="Owner Name:"))
+            # print(soup.find(text="Second  Name:"))
+            # print(soup.find(text="Mailing Address:"))
+            # print(soup.find(text="City, State, Zipcode:"))
+            # print(soup.find(text="Taxable Value School:"))
+            # print(soup.find(text="Roll Year:"))
+            # print(soup.find(text="Sale Information"))
+            # print(soup.find(text="Sale Date"))
+            # print(soup.find(text="Land Information"))
+            # print(soup.find(text="Acres"))
+            # print(soup.find(text="Millage Code:"))
+            # print(soup.find(text="Exemption:"))
+            # print(soup.find(text="Use Code:"))
+            # print(soup.find(text="Site Address:"))
+            # print(soup.find(text="Tax ID:"))
+            #pi = soup.find(text="Tax ID:")
+            # print(pi)
+            # print(soup.find(text="Owner Name:"))
+            # print(soup.find(text="Roll Year:"))
+            # print(soup.find(text="Assessed Value School:"))
+            # for index,item in enumerate(list(pi.parent.parent.parent.parent.parent.descendants)):
+                # print('list(pi.parent.parent.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
+            # for index,item in enumerate(list(soup.descendants)):
+                # print('\n\n\n\n\n\n\n\n\nlist(soup.descendants)['+str(index)+']: '+str(item))
+            # b=list(soup.descendants)[26]
+            # c=list(b.descendants)[9]
+            # for index,item in enumerate(list(b.descendants)):
+                # print('list(\n\n\n\n\n\n\n b.descendants)['+str(index)+']: '+str(item))
+                # if '$' in str(item):
+                    # print('['+str(index)+']: '+str(item))
+                # if str(item).startswith('$'):
+                    # print('list(pi.parent.parent.descendants)['+str(index)+']: '+str(item))
+            # if mvt:
+                # ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
 
-            class MyHTMLParser(HTMLParser):
-                def handle_starttag(self, tag, attrs):
-                    print('handle_starttag: ' + tag)
-                    if 'tr' in tag:
-                        self.in_tr = True
-                def handle_endtag(self, tag):
-                    if 'tr' in tag:
-                        self.in_tr = False
-                        self.in_mvt = False
-                def handle_data(self, data):
-                    # print('handle_data: ' + data)
-                    if 'Market Value Total:' in data:
-                        self.in_mvt = True
-                    if self.in_mvt and '\\n' not in data:
-                        self.mvt = data
-                        print('handle_data: ' + data)
+        class MyHTMLParser(HTMLParser):
+            def handle_starttag(self, tag, attrs):
+                print('handle_starttag: ' + tag)
+                if 'tr' in tag:
+                    self.in_tr = True
+            def handle_endtag(self, tag):
+                if 'tr' in tag:
+                    self.in_tr = False
+                    self.in_mvt = False
+            def handle_data(self, data):
+                # print('handle_data: ' + data)
+                if 'Market Value Total:' in data:
+                    self.in_mvt = True
+                if self.in_mvt and '\\n' not in data:
+                    self.mvt = data
+                    print('handle_data: ' + data)
 
-            parser = MyHTMLParser()
-            parser.limit_tables = 20
-            parser.limit = 5000
-            parser.rows = []
-            parser.current_row = None
-            parser.in_tr = False
-            parser.tables = []
-            parser.table_count = 0
-            parser.td_count = 0
-            parser.in_table = False
-            parser.current_table = None
-            parser.in_mvt = False
-            # print(r.text)
-            # print(r.json())
-            f = urlopen(the_url)
-            html = f.read()
-            # parser.feed(html)
-            # parser.feed(urlopen(the_url).encode('utf-8'))
-            # parser.feed(str(r.text))
-            # pprint.pprint(parser.tables)
-            # print(parser.mvt)
-            # return parser.mvt
-            # ret['latest market value total']=parser.mvt
+        parser = MyHTMLParser()
+        parser.limit_tables = 20
+        parser.limit = 5000
+        parser.rows = []
+        parser.current_row = None
+        parser.in_tr = False
+        parser.tables = []
+        parser.table_count = 0
+        parser.td_count = 0
+        parser.in_table = False
+        parser.current_table = None
+        parser.in_mvt = False
+        # print(r.text)
+        # print(r.json())
+        # f = urlopen(the_url)
+        # html = f.read()
+        # parser.feed(html)
+        # parser.feed(urlopen(the_url).encode('utf-8'))
+        # parser.feed(str(r.text))
+        # pprint.pprint(parser.tables)
+        # print(parser.mvt)
+        # return parser.mvt
+        # ret['latest market value total']=parser.mvt
     except:
         raise#print('123 ex: '+str(e))
 
     try:
         # year built - Condo Unit Detail
-        soup = BeautifulSoup(urlopen(the_url), 'html.parser')
+        # time.sleep(1)
+        soup = BeautifulSoup(html, 'html.parser')
         bi_cell = soup.find(text="Building Information")
         if bi_cell is not None:
             # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
@@ -761,7 +771,8 @@ def get_bcpaco_item(acct):
     try:
         # print_headers2(the_url)
         # the_html=urlopen(the_url)
-        soup = BeautifulSoup(urlopen(the_url), 'html.parser')
+        # time.sleep(1)
+        soup = BeautifulSoup(html, 'html.parser')
         bi_cell = soup.find(text="Building Information")
         if bi_cell is not None:
             # print_headers(the_url, 'html.parser')
