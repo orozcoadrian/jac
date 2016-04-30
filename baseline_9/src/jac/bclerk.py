@@ -12,8 +12,9 @@ from jac import cfm
 
 
 def get_bclerk_results_text(case):
+    print('get_bclerk_results_text('+case+')')
     uri = 'http://web1.brevardclerk.us/oncoreweb/search.aspx'
-    response = urlopen(uri)
+    response = urlopen(uri, timeout=5)
     forms = ParseResponse(response, backwards_compat=False)
     form = forms[0]
 #     print form

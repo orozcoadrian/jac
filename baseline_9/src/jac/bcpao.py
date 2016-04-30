@@ -581,7 +581,7 @@ def get_bcpaco_item(acct):
                     # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
             ret['address']=str(list(sa.parent.parent.descendants)[5].replace('\\r\\n','').strip())
             ret['address-geo']=Maps().get_json_for_address(ret['address'])
-            print(ret['address-geo'])
+            # print(ret['address-geo'])
             ret['zip_code']=ret['address'][-5:]
     except:
         raise
