@@ -16,7 +16,7 @@ class Test(unittest.TestCase):
 
 
 
-    
+
     def test0(self):
         #@unittest.skip("this test was written against an implementation that used JUDGMENT REAL PROPERTY. using jrp you get lot 5 but using lis pendens you get lot 8.")
         logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
@@ -109,7 +109,7 @@ class Test(unittest.TestCase):
   u'RecordDate': u'12/16/2014',
   u'Status': u'',
   u'[row]': u'7'}])
-            
+
 #         print('2')
 #         print(results_node)
 #         print('3')
@@ -215,22 +215,54 @@ class Test(unittest.TestCase):
         legal_str = 'LT 14 PB 1 PG 165 FLORIDA INDIAN RIVER LAND CO E 230 FT OF N 1/4 S 23 T 29 R 37'
         legal=jac.bclerk.get_legal_from_str(legal_str)
         print('legal='+str(legal))
-        
+
     def test_bclerk_1(self):
 #         legal_str = 'LT 34 PB 25 PG 105 RAVENCREST S 22 T 20G R 34 SUBID 01'
 #         legal_str = 'BLK 40K U T174 W 260 FT OF S 530 FT OF N 790 FT THE VILLAGES OF SEAPORT CONDO ORB 2598/136 S 14 T 24 R 37 SUBID 00'
 #         legal_str = 'LT 14 PB 1 PG 165 FLORIDA INDIAN RIVER LAND CO E 230 FT OF N 1/4 S 23 T 29 R 37'
         legal=jac.bclerk.get_legal_by_case("05-2013-CA-037340-XXXX-XX")
         print('legal='+str(legal))
-        
+
+    def test_bclerk_1b(self):
+        ret=jac.bclerk.get_legal_by_case('05-2009-CA-034931-')
+#         print('rets='+str(rets))
+        pprint.pprint(ret)
+
     def test_bclerk_2(self):
         ret=jac.bclerk.get_legal_by_case('05-2009-CA-014066-')
 #         print('rets='+str(rets))
         pprint.pprint(ret)
-        
+
         rets=jac.bclerk.get_legals_by_case('05-2009-CA-014066-')
 #         print('rets='+str(rets))
         pprint.pprint(rets)
+
+    def test_oncoreweb_by_legal(self):
+        leg_desc_in = 'LT 7 BLK H PB 54 PG 49 HERITAGE ISLE P.U.D. PHASE 5 S 08 T 26 R 36 SUBID UP'
+        l = jac.bclerk.get_legal_from_str(leg_desc_in)
+        print(l)
+        # leg_desc_url_out = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C7%7CBlock%2CH%7CLand_Lot%2C54%7CDistrict%2C49%7CPropSection%2C08%7CBuilding%2C26%7CRange%2C36%7CPhase%2CUP&cn=&dt=&st=legal&ld='
+        leg_desc_url_out = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C7%7CBlock%2CH%7CLand_Lot%2C54%7CDistrict%2C49%7CPropSection%2C08%7CBuilding%2C26%7CRange%2C36%7CPhase%2CUP&cn=&dt=&st=legal&ld='
+
+        self.assertEqual(leg_desc_url_out, jac.bclerk.oncoreweb_by_legal(leg_desc_in))
+
+    def test_do_oncoreweb_legal(self):
+        # self.assertEqual(
+        #     'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CBlock%2C%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&cn=05-2015-CA-026652-XXXX-XX&dt=ALL%20DOCUMENT%20TYPES&st=legal&ld=Lot%201%20Block%20%20Plat%20BK%2040%20Plat%20Pg%2033%20Section%2002%20Township%2027%20Range%2037%20SUBID%20PY%20'
+        #     , jac.bclerk.oncoreweb_by_legal('LT 1 PB 40 PG 33 HARBOUR LIGHTS PHASE II S 02 T 27 R 37 SUBID PY'))
+
+        actual = jac.bclerk.oncoreweb_by_legal('LT 1 PB 40 PG 33 HARBOUR LIGHTS PHASE II S 02 T 27 R 37 SUBID PY')
+        print(actual)
+        self.assertEqual(
+            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&st=legal&ld=Lot%201%20Plat%20BK%2040%20Plat%20Pg%2033%20Section%2002%20Township%2027%20Range%2037%20SUBID%20PY%20'
+            , actual)
+        self.assertEqual(
+            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CBlock%2C%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&cn=&dt=&st=legal&ld='
+            , actual)
+
+    def test_do_oncoreweb_legal2(self):
+        # print(jac.bclerk.oncoreweb_by_legal('BLK 261J U 8402 UNSURVEYED LAND LYING W OF GOVT PUERTO DEL RIO CONDO PH 1D ORB 5470/7102 S 15 T 24 R 37 SUBID 00'))
+        print(jac.bclerk.oncoreweb_by_legal('BLK 261J U 8402 UNSURVEYED LAND LYING W OF GOVT PUERTO DEL RIO CONDO PH 1D ORB 5470/7102 S 15 T 24 R 37 SUBID 00'))
 
 
 

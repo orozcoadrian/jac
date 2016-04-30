@@ -169,7 +169,8 @@ class Test(unittest.TestCase):
         ret = jac.bclerk.get_legal_by_case(cn_str)
 #         print(repr(ret))
         self.assertEquals('LT 14 PB 1 PG 33 PLAT OF HORTI S 88.81FT OF N 139.10FT; '
-                         +'LT 14 PB 1 PG 33 PLAT OF HORTI S 88.81 FT OF N 139.10 FT', ret['legal_description'])
+                         +'LT 14 PB 1 PG 33 PLAT OF HORTI S 88.81 FT OF N 139.10 FT; '
+                          'LT 14 PB 1 PG 33 HORTI AKA LT 10 HORTI POINT RIVER FRONT ESTATES UNREC S 88.81 FT OF N 139.10 FT OF S 18 T 25 R 37 SUBID CY', ret['legal_description'])
         the_address = self.get_address_from_cn(cn_str)
 #         print('addr='+str(the_address))
 
@@ -177,12 +178,13 @@ class Test(unittest.TestCase):
         cn_str = "05-2010-CA-032465-"
 #         print(jac.bclerk.get_bclerk_results_text(cn_str))
         ret_items = jac.bclerk.get_records_grid_for_case_number(cn_str)
-        self.assertEquals(4, len(ret_items))
+        self.assertEquals(5, len(ret_items))
 
         self.assertEquals('LT 14 PB 1 PG 33 PLAT OF HORTI S 88.81FT OF N 139.10FT', ret_items[0]['First Legal'])
         self.assertEquals('', ret_items[1]['First Legal'])
         self.assertEquals('', ret_items[2]['First Legal'])
         self.assertEquals('LT 14 PB 1 PG 33 PLAT OF HORTI S 88.81 FT OF N 139.10 FT', ret_items[3]['First Legal'])
+        self.assertEquals('LT 14 PB 1 PG 33 HORTI AKA LT 10 HORTI POINT RIVER FRONT ESTATES UNREC S 88.81 FT OF N 139.10 FT OF S 18 T 25 R 37 SUBID CY', ret_items[4]['First Legal'])
 #         the_address = self.get_address_from_cn(cn_str)
 #         print('addr='+str(the_address))
 

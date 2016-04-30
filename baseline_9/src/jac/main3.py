@@ -1,5 +1,8 @@
 # http://askubuntu.com/questions/116020/python-https-requests-urllib2-to-some-sites-fail-on-ubuntu-12-04-without-proxy
 import ssl
+
+
+
 ssl.PROTOCOL_SSLv23 = ssl.PROTOCOL_TLSv1
 
 # http://stackoverflow.com/questions/30904815/having-ssl-problems-with-requests-get-in-python     and     http://docs.python-requests.org/en/latest/user/advanced/
@@ -24,7 +27,6 @@ import argparse
 import datetime
 from xlwt import Workbook
 import logging
-import jac_core
 import time
 import jac.filters.FilterMax
 import jac.filters.FilterCountId
@@ -38,7 +40,8 @@ from fetch import Cfm, Legal, Bcpao, Bcpao_db, Taxes
 import os
 import zipfile
 import shutil
-
+from jac import myutils
+from jac.maps import Maps
 
 def get_non_cancelled_nums(args, mrs):
     mrs = record.MyRecordSet.MyRecordSet()
@@ -80,7 +83,7 @@ def main3():
     fnum=jac.filters.FilterMax.FilterMax(args)
     mrs=record.MyRecordSet.MyRecordSet()
     jac.sales.sales.add_foreclosures(mrs,fnum.get_limit())
-    date_counts = pprint.pformat(jac.myutils.get_dates_count_map(mrs.get_records())).replace('\n', '<br>').replace('datetime.datetime(','').replace(', 0, 0','').replace(', ','/').replace(')','')
+    date_counts = pprint.pformat(myutils.get_dates_count_map(mrs.get_records())).replace('\n', '<br>').replace('datetime.datetime(','').replace(', 0, 0','').replace(', ','/').replace(')','')
 
     dates = mydate.get_next_dates(date.today())
     logging.info(dates)
@@ -134,6 +137,7 @@ def main3():
         os.system('start "" "C:/Program Files/Microsoft Office/Office12/Excel.exe" /e '+out_file)
 
 
+
     
     body = 'this result is for: ' + abc
     body += '<br>total records: ' + str(len(mrs.get_records()))
@@ -173,6 +177,7 @@ def main3():
 
     print 'duration %s' % datetime.timedelta(seconds=time.time()-start)
     print('END')
+    return 0
 
 def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     logging.info('**get_mainsheet_dataset: ' + date_string_to_add)
@@ -194,6 +199,9 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     sheet_name = date_string_to_add.replace('/', '_')[:5]
     out_dir_htm = out_dir +'/'+sheet_name+ '/html_files'
     os.makedirs(out_dir_htm)
+
+
+
     fetchers = []
     fetchers.append(Cfm(out_dir_htm))
     fetchers.append(Legal())
@@ -215,7 +223,10 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
                     logging.error(' retrying...')
                     retries_count += 1
                     logging.error(' retries_count: ' + str(retries_count))
-                    time.sleep(5)
+                    time.sleep(1)
+
+    Maps().do_map_output(mrs, out_dir, sheet_name)
+
     logging.info('fetch complete')
     logging.info('num records: '+str(len(mrs.get_records())))
 #     pprint.pprint(mrs.get_records())
@@ -223,6 +234,9 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     sheetBuilder.set_args(args)
     dataset = sheetBuilder.add_sheet(mrs.get_records())
     return dataset
+
+
+
 
 
 if __name__ == '__main__':

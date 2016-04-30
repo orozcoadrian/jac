@@ -1,10 +1,20 @@
 import itertools
-import requests
-import re
+
+
+import time
 from bs4 import BeautifulSoup
 import pprint
 import logging
 import sys
+
+from jac import bclerk
+
+import urllib
+import urllib2
+
+import requests
+import re
+
 
 def get_url():
     return 'https://vweb1.brevardclerk.us/facts/d_caseno.cfm'
@@ -26,7 +36,7 @@ def case_info(out_dir, year, court_type, seq_number, cfid, cftoken):
     headers=get_headers(cfid, cftoken)
     data=get_data(year, court_type, seq_number)
 #     r = requests.post(url, data, headers=headers, stream=True)
-    r = requests.post(url, data, headers=headers, stream=True)
+    r = requests.post(url, data, headers=headers, stream=True, timeout=5)
     #print(r.url)
     # print(r.cookies)
     # print(r.cookies['CFID'])
@@ -49,7 +59,17 @@ def case_info(out_dir, year, court_type, seq_number, cfid, cftoken):
     return ret
 
 def get_case_number_url(cn):
-    return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn='+cn+'&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
+    adate=time.strftime("%m/%d/%Y")#'5/31/2014'
+    # thedate=urllib2.quote(adate) why is this not escaping the fwd slash to %2F ?
+    thedate=adate.replace('/','%2F')
+    print(thedate)
+    # print(urllib.quote('/~connolly/'))
+    # print (time.strftime("%m/%d/%Y"))
+    return get_case_number_url(thedate, cn)
+
+
+def get_case_number_url(date_str, cn):
+    return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=' + date_str + '&pt=-1&cn=' + cn + '&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
 
 def do(out_dir, year, court_type, seq_number, cfid, cftoken):
     ret1 = case_info(out_dir, year, court_type, seq_number, cfid, cftoken)
@@ -79,12 +99,44 @@ def get_lad_from_reg_text(r_text):
         # print(l)
     return lad
 
+def get_lad_from_reg_text2(g):
+    ret = None
+    valid_patterns_for_original_mortgage = ['ER: F/J FCL']
+#     for i in g['items']:
+# #         pprint.pprint(i)
+# #         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
+#         if 'Description' in i and any(x in i['Description'] for x in valid_patterns_for_original_mortgage):
+#             if i['Img']:
+#                 ret = i['Img']
+    for x in valid_patterns_for_original_mortgage:
+        ret = get_lad_url_from_grid2(g, x)
+        if ret:
+            print('getting by: '+x)
+            break
+
+    return ret
+
+def get_lad_url_from_grid2(g, a_pattern):
+    ret = None
+    for i in g['items']:
+#         pprint.pprint(i)
+#         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
+        if 'Description' in i and a_pattern in i['Description']:
+            if i['Img']:
+                ret = i['Img']
+                break
+    return ret
+
+def get_lad_url_from_rtext(r_text):
+    grid = get_reg_actions_dataset(r_text)
+    return get_lad_from_reg_text2(grid)
+
 def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
     ret = {}
     #indent = '                                                        '
     id2 = year+'_'+court_type+'_'+seq_number
     r_text = get_reg_actions_text(year, court_type, seq_number)
-    lad = get_lad_from_reg_text(r_text)
+    lad = get_lad_url_from_rtext(r_text)
     ret['latest_amount_due'] = lad
     ret['orig_mtg_link'] = get_orig_mortgage_url_from_rtext(r_text)
 
@@ -191,7 +243,7 @@ def get_case_number_fields(case_number):
 
 def get_orig_mortgage_url_from_grid(g):
     ret = None
-    valid_patterns_for_original_mortgage = ['OR MTG', 'MTG & ORIG', 'COPY OF MTG', 'ORIGINAL NOTE & MORTGAGE DEED', 'ER: F/J FCL']
+    valid_patterns_for_original_mortgage = ['NOTICE FILING ORIG NOTE & MTG', 'OR MTG', 'MTG & ORIG', 'COPY OF MTG', 'ORIGINAL NOTE & MORTGAGE DEED']
 #     for i in g['items']:
 # #         pprint.pprint(i)
 # #         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
@@ -201,6 +253,7 @@ def get_orig_mortgage_url_from_grid(g):
     for x in valid_patterns_for_original_mortgage:
         ret = get_orig_mortgage_url_from_grid2(g, x)
         if ret:
+            print('getting by: '+x)
             break
 
     return ret
@@ -235,3 +288,5 @@ def get_amount_due_by_cn(cn):
 #     print('='*80)
     ret = get_lad_from_reg_text(r_text)
     return ret
+
+

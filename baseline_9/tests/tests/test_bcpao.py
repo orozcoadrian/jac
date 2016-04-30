@@ -49,7 +49,7 @@ class Test(unittest.TestCase):
         #https://www.bcpao.us/asp/Show_parcel.asp?acct=2861697&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner
         pprint.pprint(i)
         self.assertEqual(i['address'] , '510  TORTUGA WAY , WEST MELBOURNE 32904')
-        self.assertEqual(i['latest market value total'] , '$165,690')
+        self.assertEqual(i['latest market value total'] , '$155,690')
         self.assertEqual(i['zip_code'] , '32904')
         self.assertEqual(i['frame code'] , '03')
         self.assertEqual(i['year built'] , '2006') # broken
@@ -206,6 +206,9 @@ class Test(unittest.TestCase):
         #self.assertAcctFromLegal('LT 3 BLK G PB 10 PG 22 GOLF PARK SUBD S 20 FT S 04 T 28 R 37 SUBID 51', '---')
         self.assertAcctFromLegal('LT 14 BLK 3 PB 19 PG 58 MARLIN SUBD S 05 T 25 R 36 SUBID 52', '2504233')
 #         self.assertAcctFromLegal('LT 6 PB 1 PG 164 FLORIDA INDIAN RIVER LAND CO PARCEL 1 FROM S QUARTER CNR BEING INTERSEC OF CENLN OF ST RD 9 S 33 T 28 R 37', '---')
+        self.assertAcctFromLegal('BLK 20U U A21 N 227.29 FT OF E 128 FT OF W 778 TREASURE COAST HARBOUR VILLAS CONDO ORB 5741/5541 S 31 T 24 R 37 SUBID 00', '2461077')
+
+    def test_bclerk_then_bcpao11b(self):
         self.assertAcctFromLegal('BLK 20U U A21 N 227.29 FT OF E 128 FT OF W 778 TREASURE COAST HARBOUR VILLAS CONDO ORB 5741/5541 S 31 T 24 R 37 SUBID 00', '2461077')
 
     def test_bclerk_then_bcpao12(self):

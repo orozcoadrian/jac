@@ -1,3 +1,5 @@
+import urllib
+
 from bs4 import BeautifulSoup
 from mechanize import ParseResponse, urlopen
 import re
@@ -6,6 +8,7 @@ import logging
 import pprint
 import time
 
+from jac import cfm
 
 
 def get_bclerk_results_text(case):
@@ -44,6 +47,9 @@ def get_legal_by_case(case):
             lds.append(row['First Legal'])
     ret['legal_description']='; '.join(lds).strip()
 #     print('ret[legal_description]: ' + ret['legal_description'])
+    if len(lds)>0:
+        ret['oncoreweb_by_legal_url'] = oncoreweb_by_legal(lds[0])
+        print(ret['oncoreweb_by_legal_url'])
     for i,ld in enumerate(lds):
         # print(b.strip())
         legal_desc = ld.strip()
@@ -138,3 +144,42 @@ def get_records_grid_for_case_number(case_number):
                 items.append(current_item)
 
     return items
+
+def oncoreweb_by_legal(leg_desc_in):
+    ret=''
+    l = get_legal_from_str(leg_desc_in)
+    try:
+        # lot = l['lt']  # ''7'
+        # lot_s=urllib.quote('Lot,'+lot+'|Block'+',H'+'|Land_Lot'+','+l['pb'],'|District')
+        theblk=''
+        thelt=''
+        thepb=''
+        thepg=''
+        if 'blk' in l and l['blk']:
+            theblk = '|Block' + ',' +l['blk']
+        if 'lt' in l and l['lt']:
+            thelt = l['lt']
+        if 'pb' in l and l['pb']:
+            thepb = l['pb']
+        if 'pg' in l and l['pg']:
+            thepg = l['pg']
+        lot_s = urllib.quote('Lot,' + thelt +  theblk + '|Land_Lot' + ',' + thepb
+                             + '|District' + ',' + thepg + '|PropSection' + ',' + l['s'] + '|Building' + ',' + l[
+                                 't'] + '|Range' + ',' + l['r']
+                             + '|Phase' + ','+l['subid'])
+        # 2c ,
+        # 7c |
+        mys = 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf='
+        mys += lot_s
+        # mys += '&cn=05-2015-CA-026652-XXXX-XX&dt=ALL%20DOCUMENT%20TYPES&st=legal&ld='
+        mys += '&cn=&dt=&st=legal&ld='
+        mys2 = 'Lot ' + thelt + ' Block ' + theblk + ' Plat' + ' ' + 'BK' + ' ' + thepb + ' ' + 'Plat' + ' ' + 'Pg' + ' ' + thepg \
+               + ' ' + 'Section' + ' ' + l['s'] + ' ' + 'Township' + ' ' + l['t'] + ' ' + 'Range' + ' ' + l[
+                   'r'] + ' ' + 'SUBID' + ' ' + l['subid'] + ' '
+        mys2 = urllib.quote(mys2)
+        # mys += mys2
+        ret = mys
+    except Exception as e:
+        print(' ** error in oncoreweb_by_legal '+str(e))
+
+    return ret

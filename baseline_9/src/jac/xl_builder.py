@@ -39,7 +39,7 @@ class MainSheetBuilder(object):
         return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=' + urllib.quote(name) + '&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES'
     @staticmethod
     def get_case_number_url(cn):
-        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn='+cn+'&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
+        return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=5%2F31%2F2014&pt=-1&cn='+cn+'&dt=ALL DOCUMENT TYPES&st=casenumber&ss=ALL DOCUMENT TYPES'
     def get_items_to_use(self, all_items):
         return all_items  # no filtering here
     def get_headers(self):
@@ -64,8 +64,9 @@ class MainSheetBuilder(object):
 #         headers.append(jac.xl3.Cell.from_display("Sub", width=1500))
 #         headers.append(jac.xl3.Cell.from_display("Blk", width=1500))
 #         headers.append(jac.xl3.Cell.from_display("Lot", width=1500))
-        headers.append(jac.xl3.Cell.from_link("bcpao", 'https://www.bcpao.us/asp/real_search.asp'))
+        headers.append(jac.xl3.Cell.from_link("bcpao", 'https://legacy.bcpao.us/asp/real_search.asp'))
         headers.append(jac.xl3.Cell.from_display("f_code"))
+        headers.append(jac.xl3.Cell.from_display("owed_link"))
         headers.append(jac.xl3.Cell.from_display("owed", width=4000))
         headers.append(jac.xl3.Cell.from_display("assessed"))
         headers.append(jac.xl3.Cell.from_display("base_area"))
@@ -79,6 +80,7 @@ class MainSheetBuilder(object):
 #         headers.append(jac.xl3.Cell.from_display("db-fcode"))
         headers.append(jac.xl3.Cell.from_display("orig_mtg"))
         headers.append(jac.xl3.Cell.from_display("taxes"))
+        # headers.append(jac.xl3.Cell.from_display("oncoreweb_by_legal_url"))
         return headers
     def get_display_case_number(self, case_number):
         return case_number.replace('XXXX-XX', '')
@@ -113,50 +115,28 @@ class MainSheetBuilder(object):
                 if zip_str:
                     value_to_use = jac.xl3.Cell.from_display(int(zip_str))
                 row.append(value_to_use)
+            if 'owed_link' == h.get_display():
+                if 'latest_amount_due' in i:
+                    if i['latest_amount_due'] and len(i['latest_amount_due']) > 0:
+                        row.append(jac.xl3.Cell.from_link('link', i['latest_amount_due']))
+                    else:
+                        row.append(jac.xl3.Cell.from_display(''))
             if 'owed' == h.get_display():
-                value_to_use = jac.xl3.Cell.from_display('')
-                if 'latest_amount_due' in i and i['latest_amount_due']:
-                    a_str = i['latest_amount_due'].replace('$', '').replace(',', '')
-                    if a_str:
-                        try:
-                            value_to_use = jac.xl3.Cell.from_display(float(a_str))
-                        except:
-                            value_to_use = jac.xl3.Cell.from_display(a_str)
-                row.append(value_to_use)
+                row.append(jac.xl3.Cell.from_display('')) # left blank to manually add the value
             if 'case_info' in h.get_display():
-                link_str = ''
-                m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', i['case_number'])  # todo: remove this duplication with record.fetch_cfm
-                if m:
-                    # print(m.group(1)+','+m.group(2))
-                    # print(m.groups())
-                    year = m.group(2)
-                    court_type = m.group(3)
-                    seq_number = m.group(4)
-                    id2 = year + '_' + court_type + '_' + seq_number
-                    link_str = self.get_sheet_name()+'/html_files/' + id2 + '_case_info.htm'
-                # row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
+                link_str = self.get_case_info_link(i)# row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
                 row.append(jac.xl3.Cell.from_link('link', link_str))
             if 'reg_actions' in h.get_display():
-                link_str = ''
-                m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*', i['case_number'])  # todo: remove this duplication with record.fetch_cfm
-                if m:
-                    # print(m.group(1)+','+m.group(2))
-                    # print(m.groups())
-                    year = m.group(2)
-                    court_type = m.group(3)
-                    seq_number = m.group(4)
-                    id2 = year + '_' + court_type + '_' + seq_number
-                    link_str = self.get_sheet_name()+'/html_files/' + id2 + '_reg_actions.htm'
-                # row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
+                link_str2 = self.get_reg_actions_link(i)# row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
-                row.append(jac.xl3.Cell.from_link('link', link_str))
+                row.append(jac.xl3.Cell.from_link('link', link_str2))
             if 'liens-name' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if r.get_name_combos() is not None and len(r.get_name_combos()) > 0:
                     value_to_use = jac.xl3.Cell.from_link(r.get_name_combos()[0], self.get_bclerk_name_url(r.get_name_combos()[0]))
                 row.append(value_to_use)
-            if 'legal' in h.get_display():
+            if 'legal' == h.get_display():
                 the_str = ''
                 if 'legal' in i and 'legal_description' in i['legal']:
                     the_str = i['legal']['legal_description']
@@ -216,7 +196,7 @@ class MainSheetBuilder(object):
                 row.append(jac.xl3.Cell.from_display(fc_str))
             if 'assessed' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
-                a_str = self.try_get(i, 'bcpao_item', 'latest market value total').replace('$', '').replace(',', '')
+                a_str = self.get_assessed_str(i)
                 if a_str:
                     try:
                         value_to_use = jac.xl3.Cell.from_display(float(a_str))
@@ -224,22 +204,15 @@ class MainSheetBuilder(object):
                         value_to_use = jac.xl3.Cell.from_display(a_str)
                 row.append(value_to_use)
             if 'base_area' in h.get_display():
-                the_str = ''
-                if 'bcpao_item' in i and 'total base area' in i['bcpao_item']:
-                    the_str = float(i['bcpao_item']['total base area'].replace(',', ''))
-                row.append(jac.xl3.Cell.from_display(the_str))
+                the_strba = self.get_base_area(i)
+                row.append(jac.xl3.Cell.from_display(the_strba))
             if 'year built' in h.get_display():
-                the_str = ''
-                if 'bcpao_item' in i and 'year built' in i['bcpao_item']:
-                    try:
-                        the_str = int(i['bcpao_item']['year built'])
-                    except:
-                        print("error parsing i['bcpao_item']['year built']='"+i['bcpao_item']['year built']+"' as an int")
-                row.append(jac.xl3.Cell.from_display(the_str))
+                year = self.get_year_built_str(i)
+                row.append(jac.xl3.Cell.from_display(year))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)
-                owed_column = 'N' # latest_amount_due
-                ass_column = 'O' # latest market value total
+                owed_column = 'O' # latest_amount_due
+                ass_column = 'P' # latest market value total
                 f_str = 'IF(AND(NOT(ISBLANK('+owed_column + row_str + ')),NOT(ISBLANK('+ass_column + row_str + '))),'+owed_column + row_str + '-'+ass_column + row_str + ',"")'
                 row.append(jac.xl3.Cell.from_formula(f_str))
             if 'db-addr' == h.get_display():
@@ -303,7 +276,63 @@ class MainSheetBuilder(object):
                 except:
                     value_to_use = jac.xl3.Cell.from_display(i['taxes_value'])
                 row.append(value_to_use)
+            if 'oncoreweb_by_legal_url' == h.get_display():
+                value_to_use = jac.xl3.Cell.from_display('')
+                if 'oncoreweb_by_legal_url' in i['legal']:
+                    if i['legal']['oncoreweb_by_legal_url'] and len(i['legal']['oncoreweb_by_legal_url']) > 0:
+                        value_to_use =jac.xl3.Cell.from_link('link', i['legal']['oncoreweb_by_legal_url'])
+                    else:
+                        value_to_use =jac.xl3.Cell.from_display('')
+                row.append(value_to_use)
 #jac.tax.get_pay_all_from_taxid(tax_id)
+
+    def get_assessed_str(self, i):
+        a_str = self.try_get(i, 'bcpao_item', 'latest market value total').replace('$', '').replace(',', '')
+        return a_str
+
+    def get_base_area(self, i):
+        the_strba = ''
+        if 'bcpao_item' in i and 'total base area' in i['bcpao_item']:
+            the_strba = float(i['bcpao_item']['total base area'].replace(',', ''))
+        return the_strba
+
+    def get_year_built_str(self, i):
+        the_str3 = ''
+        if 'bcpao_item' in i and 'year built' in i['bcpao_item']:
+            try:
+                the_str3 = int(i['bcpao_item']['year built'])
+            except:
+                print("error parsing i['bcpao_item']['year built']='" + i['bcpao_item']['year built'] + "' as an int")
+        return the_str3
+
+    def get_reg_actions_link(self, i):
+        link_str2 = ''
+        m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*',
+                      i['case_number'])  # todo: remove this duplication with record.fetch_cfm
+        if m:
+            # print(m.group(1)+','+m.group(2))
+            # print(m.groups())
+            year = m.group(2)
+            court_type = m.group(3)
+            seq_number = m.group(4)
+            id2 = year + '_' + court_type + '_' + seq_number
+            link_str2 = self.get_sheet_name() + '/html_files/' + id2 + '_reg_actions.htm'
+        return link_str2
+
+    def get_case_info_link(self, i):
+        link_str = ''
+        m = re.search('(.*)-(.*)-(.*)-(.*)-.*-.*',
+                      i['case_number'])  # todo: remove this duplication with record.fetch_cfm
+        if m:
+            # print(m.group(1)+','+m.group(2))
+            # print(m.groups())
+            year = m.group(2)
+            court_type = m.group(3)
+            seq_number = m.group(4)
+            id2 = year + '_' + court_type + '_' + seq_number
+            link_str = self.get_sheet_name() + '/html_files/' + id2 + '_case_info.htm'
+        return link_str
+
     def get_sheet_name(self):
         return self.sheet_name
     def add_sheet(self, items):

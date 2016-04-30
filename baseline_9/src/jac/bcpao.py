@@ -36,12 +36,13 @@ from urllib2 import urlopen
 import unittest
 import bclerk
 import logging
-import time
+from jac.maps import Maps
+
 
 
 
 def get_use_code_str(use_code):
-    #https://www.bcpao.us/asp/Show_code.asp?numeric=t&table=UseCodes&ValColName=UseCode&DescColName=UseDesc&value=110
+    #https://legacy.bcpao.us/asp/Show_code.asp?numeric=t&table=UseCodes&ValColName=UseCode&DescColName=UseDesc&value=110
     the_map={}
     the_map['110']='R-SINGLE FAMILY RESIDENCE'
     the_map['212']='M-MANUFACTURED HOUSING - SINGLE WIDE'
@@ -51,7 +52,7 @@ def get_use_code_str(use_code):
         return the_map[use_code]
 
 def get_bcpao_query_url_by_acct(acct):
-    return 'https://www.bcpao.us/asp/Show_parcel.asp?acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner'
+    return 'https://legacy.bcpao.us/asp/Show_parcel.asp?acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner'
 
 def get_cpao_query_link_by_acct(acct):
     return '<br><a href='+get_bcpao_query_url_by_acct(acct)+'>'+acct+'</a>'
@@ -104,7 +105,7 @@ def get_accts_by_legal_by_sub__subname_lot_block(legal):
 #         if pb is not None and pg is not None and lot is not None and block is not None:
 #             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
 #             offset=86
-    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('manual: https://legacy.bcpao.us/asp/real_search.asp')
     print('pull down: "Subdivision Name, Lot & Block"')
     if sub and lot and block:
         print('Sub Name: ' + sub)
@@ -123,7 +124,7 @@ def get_acct_by_legal_by_sub__sub_block_lot(legal):
     print('get_acct_by_legal_by_sub(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
     ret=''
 
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
@@ -140,7 +141,7 @@ def get_acct_by_legal_by_sub__sub_block_lot(legal):
 
         # r = requests.post(url, data, stream=True)
         req = requests.post(url, headers=headers, data=data)
-        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
         # print_headers(the_url, 'html.parser')
@@ -204,7 +205,7 @@ def get_results_from_bcpao_results_string(bcpao_results_string):
 
 
 def get_bcpao_results_string(data):
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = { # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie':'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
         'Content-Type':'application/x-www-form-urlencoded'}
@@ -224,7 +225,7 @@ def get_accts_by_legal_by_sub__sub_pg_lot(legal):
 
     ret=[]
     data=None
-    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('manual: https://legacy.bcpao.us/asp/real_search.asp')
     print('pull down: "Subdivision Name, Lot & Block"')
     if sub and pg and lot:
         print('sub: ' + sub)
@@ -243,7 +244,7 @@ def get_accts_by_legal_by_plat__pb_pg_lot_block(legal):
 
     ret=[]
     data=None
-    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('manual: https://legacy.bcpao.us/asp/real_search.asp')
     print('pull down: "Plat Book/Page, Lot & Block"')
     if pb and pg and lot:
         print('pb: ' + pb)
@@ -268,7 +269,7 @@ def get_accts_by_legal_by_pid__t_r_s_subid_block_lot(legal):
 
     ret=[]
     data=None
-    print('manual: https://www.bcpao.us/asp/real_search.asp')
+    print('manual: https://legacy.bcpao.us/asp/real_search.asp')
     print('pull down: "Parcel Id"')
     if t and r and s:
 #         print('pb: ' + pb)
@@ -307,7 +308,7 @@ def get_acct_by_legal_by_sub__sub_pg_lot(legal):
     print('get_acct_by_legal_by_sub(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
     ret=''
 
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
@@ -323,7 +324,7 @@ def get_acct_by_legal_by_sub__sub_pg_lot(legal):
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
         req = requests.post(url, headers=headers, data=data)
-        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
         # print_headers(the_url, 'html.parser')
@@ -363,7 +364,8 @@ def get_acct_by_legal(legal):
     logging.info('get_acct_by_legal(sub="'+sub+'", lot='+str(lot)+', block='+str(block)+', pb='+str(pb)+', pg='+str(pg)+', s='+str(s)+', t='+str(t)+', r='+str(r)+', subid='+str(subid)+')')
     ret=''
 
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    # url = 'https://legacy.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
@@ -387,8 +389,8 @@ def get_acct_by_legal(legal):
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
         # time.sleep(1)
-        req = requests.post(url, headers=headers, data=data, verify=False)
-        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        req = requests.post(url, headers=headers, data=data, verify=False, timeout=5)#timeout in seconds
+        # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
         # print_headers(the_url, 'html.parser')
@@ -426,7 +428,7 @@ def get_acct_by_legal(legal):
         lot_str = convertLot(lot)
         data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+str(subid)+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         req = requests.post(url, headers=headers, data=data)
-        # the_url="https://www.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+        # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         print(data)
         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
 #         print(soup.prettify())
@@ -448,7 +450,7 @@ def get_acct_by_legal(legal):
 
 def get_acct_by_name(name):
     print("get_acct_by_name('"+name+"')")
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
@@ -543,8 +545,8 @@ def get_bcpaco_item(acct):
     ret={}
     if acct is None or len(acct) == 0:
         return ret
-    # https://www.bcpao.us/asp/Show_parcel.asp?acct=2713420&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address
-    # url = 'https://www.bcpao.us/asp/Show_parcel.asp'
+    # https://legacy.bcpao.us/asp/Show_parcel.asp?acct=2713420&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address
+    # url = 'https://legacy.bcpao.us/asp/Show_parcel.asp'
     # headers = {
         # 'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',
         # 'Content-Type': 'application/x-www-form-urlencoded'
@@ -552,13 +554,13 @@ def get_bcpaco_item(acct):
     # data='acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
     # r = requests.post(url, headers=headers, data=data)
 
-    # with closing(urlopen("https://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address')) as f:
+    # with closing(urlopen("https://legacy.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address')) as f:
         # document = html5lib.parse(f, encoding=f.info().getparam("charset"))
         # print(document)
 
     # print(str(r.text.encode('utf-8'))[8000:9000])
     # print(str(r.text))
-    the_url="http://www.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
+    the_url="http://legacy.bcpao.us/asp/Show_parcel.asp?"+'acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Address'
 
     print(the_url)
     f = urlopen(the_url)
@@ -578,6 +580,8 @@ def get_bcpaco_item(acct):
                 # # if str(item).startswith('7667'):
                     # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
             ret['address']=str(list(sa.parent.parent.descendants)[5].replace('\\r\\n','').strip())
+            ret['address-geo']=Maps().get_json_for_address(ret['address'])
+            print(ret['address-geo'])
             ret['zip_code']=ret['address'][-5:]
     except:
         raise
@@ -806,7 +810,7 @@ def get_bcpaco_item(acct):
 
 def get_acct(number, street, type2):
     print('get_acct('+number+', '+street+', '+type2+')')
-    url = 'https://www.bcpao.us/asp/find_property.asp'
+    url = 'https://legacy.bcpao.us/asp/find_property.asp'
     headers = {
         # 'Cookie': 'CFID='+cfid+'; CFTOKEN='+cftoken,
         'Cookie': 'ASPSESSIONIDQABRBBSS=ELGLAMBAELLCGOLCONGKOFHE',

@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+  <html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <meta name="SKYPE_TOOLBAR" content="SKYPE_TOOLBAR_PARSER_COMPATIBLE" />
+    <link href="/asp/_include/bcpa.css" rel="stylesheet" type="text/css">
+    <script src="/asp/_include/PopPicto.js" language="javascript" type="text/javascript"></script>
+    <script src="/asp/_include/PopMap2.js" language="javascript" type="text/javascript"></script>
+    <title>Brevard County Property Appraiser</title>
+  </head>
+
+ <body>
+ <center>
+ <table border="0" cellspacing="0" cellpadding="0"><tr><td align="center">
+  <a href="/"><img src="/images/propman.gif" width="370" height="110" alt="propman.gif" border="0"></a>
+<img src="/images/r_prban.gif" width="180" height="110" alt="r_msban.gif (4271 bytes)"><br>
+<img src="/images/Elegant_Double7D.gif" width="536" height="5" alt="Elegant_Double7D.gif"><br>
+<br>
+  <table border="0" cellspacing="1" width="100%">
+    <tr>
+      <td width="34%" align="center">
+      <form action="/scripts/esrimap.dll">
+      <input type="hidden" name="name" value="Brevard1">
+      <input type="hidden" name="Cmd" value="RealEstate">
+      <input type="hidden" name="id" value="20160429">
+
+        <input type="hidden" name="SQL1" value="XSELECT TaxAcct, property.CondoNo, property.OwnerName, property.ParcelId, property.SiteHouseNo, property.SiteStreetname, property.SiteType, property.SiteDir, LegalDescLine1, property.SiteAptNo,SubdivisX">
+
+        <input type="hidden" name="SQL2" value="XionName,BookPg,property.SecondName, property.thirdname, property.siteunit FROM property WHERE  SubdivisionName like 'PORT MALABAR UNIT 14%' and  substr(ParcelId,10,7) = '  598. ' and  substr(ParcelId,X">
+
+        <input type="hidden" name="SQL3" value="X17,7) like '   4.%' and  (MultipleFlag ='1' or MultipleFlag is Null)  ORDER by SubdivisionName, TaxAcctX">
+
+      <input type="submit" value="Map All Properties" id="submit1" name="submit1">
+      </form>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" valign="bottom"><b>Real Estate Records Search</b></td>
+    </tr>
+  </table>
+  <table border="1">
+      <tr>
+        <th bgcolor="#CCDDFF"><b>&nbsp;</b></th>
+        <th bgcolor="#CCDDFF"><b>&nbsp;</b></th>
+        <th bgcolor="#CCDDFF"><b>Account</b></th>
+        <th bgcolor="#CCDDFF"><b>Owner Name</b></th>
+        <th bgcolor="#CCDDFF"><b>Property Address</b></th>
+        <th bgcolor="#CCDDFF"><b>Parcel Id</b></th>
+
+      </tr>
+
+        <tr>
+	        <td><a href="/scripts/esrimap.dll?name=Brevard1&amp;Cmd=TID&amp;id=20160429&amp;tid=2815275">Map</a>/<a href="#" onclick="ftnPopMap2('2815275');">Map2</a></td>
+	    <!--<td><a href="/scripts/esrimap.dll?name=Brevard1&amp;Cmd=TID&amp;id=20160429&amp;tid=2815275">Map</a>/<a href="http://map.bcpao.us/Map2/default.aspx?s=f&taxacct=2815275" target="Map2">Map2</a></td>-->
+          <!--<td><a href="/scripts/esrimap.dll?name=Brevard1&amp;Cmd=TID&amp;id=20160429&amp;tid=2815275">Map</a>/<a href="/asp/goMap2.asp?taxacct=2815275">Map2</a></td>-->
+          <td><a href=# onclick='return PopPicto(2815275)'>Aerial</a></td>
+          <td><a href="Show_parcel.asp?acct=2815275&amp;gen=T&amp;tax=T&amp;bld=T&amp;oth=T&amp;sal=T&amp;lnd=T&amp;leg=T&amp;GoWhere=real_search.asp&amp;SearchBy=Sub">2815275</a><br></td>
+          <td>SPENCER, GERALD &amp; MAGRO, ROBIN<br></td>
+          <td>126 NW HURTIG AVE <br></td>
+          <td>28-36-35-EY-00598.0-0004.00<br></td>
+
+        </tr>
+
+    </table>
+    <font size="-1"><i>All Properties where  Subdivision Name like PORT MALABAR UNIT 14</i></font>
+
+      <table border="0">
+        <tr>
+
+          <td>
+            <form action="real_search.asp" method="post">
+              <input type="hidden" name="SearchBy" value="Sub">
+              <input type="submit" value="New Search">
+            </form>
+          </td>
+
+          <td>
+            <form action="record_help.asp" method="post">
+              <input type="submit" value="Help">
+            </form>
+          </td>
+        </tr>
+      </table><br>
+    <img src="/images/Elegant_Double7D.gif" width="536" height="5" alt="Elegant_Double7D.gif"><br>
+<div class="site_links">
+  <a href="/paohome.asp">[Home]</a>
+  <a href="/mainhtml/MeetPa.asp">[Meet Dana]</a>
+  <a href="/mainhtml/appraiser_job.asp">[Appraiser's Job]</a>
+  <a href="/mainhtml/geninfo.asp">[General Info]</a>
+  <a href="/asp/BudgetAndFunding.asp">[Budget &amp; Funding]</a>
+  <a href="/mainhtml/assessmentcaps.asp">[Assessment Caps]</a>
+  <a href="/mainhtml/taxexempt.asp">[Exemptions]</a>
+  <a href="/asp/hxWelcome.asp">[Online Filing]</a>
+  <a href="/mainhtml/agric.asp">[Agricultural]</a>
+  <a href="/mainhtml/gitangible.asp">[Tangible Property]</a>
+  <a href="/mainhtml/unusable.asp">[Unusable Property]</a>
+  <a href="/mainhtml/giappeal.asp">[Appeals]</a>
+  <a href="/mainhtml/paoforms.asp">[Forms]</a>
+  <a href="/1943Book/aerials.htm">[1943 Aerials]</a>
+  <a href="/mainhtml/other.asp">[Links]</a>
+  <a href="/mainhtml/contacts.asp">[Contact Us]</a>
+  <a href="/asp/disclaimer.asp">[Property Research]</a>
+  <a href="/asp/disclaimap.asp">[Map Search]</a>
+  <a href="/asp/disclaimapdemo.asp">[Quick Sales Search]</a>
+  <a href="/mainhtml/mapsdata.asp">[Maps &amp; Data]</a>&nbsp;
+  <a href="/mainhtml/taxauth.asp">[Tax Authorities]</a>
+  <a href="/mainhtml/taxfacts.asp">[Tax Facts]</a>
+  <a href="/mainhtml/faq.asp">[FAQ]</a>
+  <a href="/mainhtml/reportfraudform.asp">[Report Homestead Fraud]</a>
+  <a href="/mainhtml/HexEnforceResults.asp">[Enforcement Results]</a>
+</div><br>
+<font size="2">Copyright  1997 Brevard County Property Appraiser. All rights reserved.</font>
+
+</td></tr></table>
+</center>
+</body>
+</html>

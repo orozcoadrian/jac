@@ -19,7 +19,7 @@ class Test(unittest.TestCase):
         self.assertEqual('http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2014&n=the_url&bt=OR&d=2%2F5%2F2015&pt=-1&cn=&dt=ALL%20DOCUMENT%20TYPES&st=fullname&ss=ALL%20DOCUMENT%20TYPES',instance.get_bclerk_name_url("the_url"))
         self.assertEqual(None,instance.get_items_to_use(None))
         headers=instance.get_headers()
-        self.assertEqual(20, len(headers))
+        self.assertEqual(21, len(headers))
         self.assertEqual('cn-',instance.get_display_case_number('cn-XXXX-XX'))
 
     def test_add_to_row(self):
@@ -42,10 +42,10 @@ class Test(unittest.TestCase):
         instance = jac.xl_builder.MainSheetBuilder()
         self.assertEqual('MainSheetBuilder',instance.get_name())
         headers=instance.get_headers()
-        self.assertEqual(20, len(headers), str(headers))
+        self.assertEqual(21, len(headers), str(headers))
 
         header_strings = [cell.get_display() for cell in headers]
-        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'fc._sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-name', 'bcpao', 'f_code', 'owed', 'assessed', 'base_area', 'year built', 'owed - ass', 'orig_mtg', 'taxes'], header_strings)
+        self.assertEqual(['high', 'win', 'case_number', 'case_title', 'fc._sale_date', 'case_info', 'reg_actions', 'count', 'address', 'zip', 'liens-name', 'bcpao', 'f_code', 'owed_link', 'owed', 'assessed', 'base_area', 'year built', 'owed - ass', 'orig_mtg', 'taxes'], header_strings)
 
     def test_MainSheetBuilder_with_rows(self):
         instance = jac.xl_builder.MainSheetBuilder()
@@ -69,6 +69,28 @@ class Test(unittest.TestCase):
         self.assertEqual('', first_data_row[0].get_display())
         self.assertEqual('', first_data_row[1].get_display())
         self.assertEqual('cn0', first_data_row[2].get_display())
+
+    def test_MainSheetBuilder_owed_minus_ass(self):
+        instance = jac.xl_builder.MainSheetBuilder()
+        records = [MyRecord.MyRecord({
+            'case_number': 'cn0'
+            , 'case_title': 'ct0'
+            , 'foreclosure_sale_date': '2'
+            , 'count': '2'
+            , 'comment': ''
+            , 'taxes_value': ''
+        })]
+        data_set = instance.add_sheet(records)
+        self.assertTrue(data_set is not None)
+        print(data_set.get_items())
+        # for row in data_set.get_items():
+        header_row = data_set.get_items()[0]
+        self.assertEqual('high', header_row[0].get_display())
+        first_data_row = data_set.get_items()[1]
+        self.assertEqual('', first_data_row[0].get_display())
+        self.assertEqual('IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))),O2-P2,"")', first_data_row[17].get_formula())
+        for x,y in enumerate(first_data_row):
+            print(x, y.get_formula())
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
