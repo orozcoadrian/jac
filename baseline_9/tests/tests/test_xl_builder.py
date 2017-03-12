@@ -88,7 +88,7 @@ class Test(unittest.TestCase):
         self.assertEqual('high', header_row[0].get_display())
         first_data_row = data_set.get_items()[1]
         self.assertEqual('', first_data_row[0].get_display())
-        self.assertEqual('IF(AND(NOT(ISBLANK(O2)),NOT(ISBLANK(P2))),O2-P2,"")', first_data_row[17].get_formula())
+        self.assertEqual('IF(AND(NOT(ISBLANK(P2)),NOT(ISBLANK(Q2))),P2-Q2,"")', first_data_row[17].get_formula())
         for x,y in enumerate(first_data_row):
             print(x, y.get_formula())
 

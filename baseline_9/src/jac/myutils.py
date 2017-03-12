@@ -110,7 +110,7 @@ def get_dates_count_map(items2):
     dates_count_map = {}
     for i in items2:
         item = i.get_item()
-        date = datetime.datetime.strptime(item['foreclosure_sale_date'], "%m/%d/%Y")
+        date = datetime.datetime.strptime(item['foreclosure_sale_date'], "%Y-%m-%d")
         if date not in dates_count_map:
             dates_count_map[date] = 1
         else:

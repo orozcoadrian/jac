@@ -1,4 +1,6 @@
 # http://askubuntu.com/questions/116020/python-https-requests-urllib2-to-some-sites-fail-on-ubuntu-12-04-without-proxy
+import json
+import locale
 import ssl
 ssl.PROTOCOL_SSLv23 = ssl.PROTOCOL_TLSv1
 
@@ -36,13 +38,12 @@ from urllib2 import urlopen
 import unittest
 import bclerk
 import logging
-from jac.maps import Maps
+# from jac.maps import Maps
 
 
 
 
 def get_use_code_str(use_code):
-    #https://legacy.bcpao.us/asp/Show_code.asp?numeric=t&table=UseCodes&ValColName=UseCode&DescColName=UseDesc&value=110
     the_map={}
     the_map['110']='R-SINGLE FAMILY RESIDENCE'
     the_map['212']='M-MANUFACTURED HOUSING - SINGLE WIDE'
@@ -51,8 +52,11 @@ def get_use_code_str(use_code):
     if use_code in the_map:
         return the_map[use_code]
 
-def get_bcpao_query_url_by_acct(acct):
+def get_old_bcpao_query_url_by_acct(acct):
     return 'https://legacy.bcpao.us/asp/Show_parcel.asp?acct='+acct+'&gen=T&tax=T&bld=T&oth=T&sal=T&lnd=T&leg=T&GoWhere=real_search.asp&SearchBy=Owner'
+
+def get_bcpao_query_url_by_acct(acct):
+    return 'https://www.bcpao.us/PropertySearch/#/parcel/'+acct
 
 def get_cpao_query_link_by_acct(acct):
     return '<br><a href='+get_bcpao_query_url_by_acct(acct)+'>'+acct+'</a>'
@@ -60,9 +64,9 @@ def get_cpao_query_link_by_acct(acct):
 
 
 def convertBlock(block):
-    blk_str = block
+    blk_str = str(block)
     if block:
-        m = re.search('^(?P<num>[\0-9]+)(?P<letter>[A-Z])$', block)
+        m = re.search('^(?P<num>[\0-9]+)(?P<letter>[A-Z])$', blk_str)
         if m:
             block = m.group('num') + '.' + m.group('letter')
     #     if block and block.endswith('S'):
@@ -105,7 +109,6 @@ def get_accts_by_legal_by_sub__subname_lot_block(legal):
 #         if pb is not None and pg is not None and lot is not None and block is not None:
 #             data='SearchBy=Plat&book='+str(pb)+'&page='+str(pg)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
 #             offset=86
-    print('manual: https://legacy.bcpao.us/asp/real_search.asp')
     print('pull down: "Subdivision Name, Lot & Block"')
     if sub and lot and block:
         print('Sub Name: ' + sub)
@@ -389,59 +392,93 @@ def get_acct_by_legal(legal):
             data='SearchBy=Sub&sub='+urllib.quote(sub)+'&pg='+str(pg)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # r = requests.post(url, data, stream=True)
         # time.sleep(1)
-        req = requests.post(url, headers=headers, data=data, verify=False, timeout=5)#timeout in seconds
+
+        # https://bcpao.us/api/v1/search?lot=88&platbook=10&platpage=68&subname=LINCOLN+PARK+SUBD&activeonly=true&size=10&page=1
+        # https://bcpao.us/api/v1/search?
+        # lot=88
+        # platbook=10
+        # platpage=68
+        # subname=LINCOLN+PARK+SUBD
+        # activeonly=true
+        # size=10
+        # page=1
+        url2 = 'https://bcpao.us/api/v1/search?'
+        if lot is not None:
+            url2 +='lot='+str(lot)
+        if block is not None:
+            url2+='&blk='+str(block)
+        if pb is not None:
+            url2+='&platbook='+str(pb)
+        if pg is not None:
+            url2+='&platpage='+str(pg)
+        url2+='&subname='+urllib.quote(sub)
+        url2+='&activeonly=true&size=10&page=1'
+
+        headers = {'Accept': 'application/json'}
+
+        req = requests.get(url2, headers=headers, verify=False, timeout=10)#timeout in seconds
+        # req.raise_for_status()
+
+        # parcel_data = get_parcelData_by_acct(acct)
+        if req.status_code == 200 and len(req.text) > 0:
+            loaded_json = json.loads(req.text) # use req.json() instead?
+            if len(loaded_json) == 1:
+                ret = loaded_json[0]['account']
+        # locale.setlocale(locale.LC_ALL, 'en_US')
+        # ret['latest market value total'] = locale.currency(val_, grouping=True)
+
         # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
         # print(the_url)
-        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
-        # print_headers(the_url, 'html.parser')
-        rers_cell = soup.find(text="Real Estate Records Search")
+#         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+#         # print_headers(the_url, 'html.parser')
+#         rers_cell = soup.find(text="Real Estate Records Search")
+#
+# #         for a in soup.find_all('a'):
+# #             pprint.pprint(a)
+#         aerials = soup.find_all('a', text="Aerial")
+#         if aerials and len(aerials) > 1:
+#             # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
+#             print('ignoring this whole page because we have more than one result (tax ids)')
+#             rers_cell = None
+#         # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+#         # print_headers(soup, 'Real Estate Records Search')
+#         if rers_cell is not None:
+#             # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
+#         # print(bi_cell.parent.parent.parent.parent)
+#         # # print(list(bi_cell.parent.parent.parent.parent.descendants))
+#         # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
+#             # try:
+#                 # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
+#             # except:
+#                 # pass
+#             # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
+#             ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
 
-#         for a in soup.find_all('a'):
-#             pprint.pprint(a)
-        aerials = soup.find_all('a', text="Aerial")
-        if aerials and len(aerials) > 1:
-            # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
-            print('ignoring this whole page because we have more than one result (tax ids)')
-            rers_cell = None
-        # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
-        # print_headers(soup, 'Real Estate Records Search')
-        if rers_cell is not None:
-            # print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants))
-        # print(bi_cell.parent.parent.parent.parent)
-        # # print(list(bi_cell.parent.parent.parent.parent.descendants))
-        # for index, item in enumerate(list(bi_cell.parent.parent.parent.parent.parent.descendants)):
-            # try:
-                # print('list(bi_cell.parent.parent.parent.parent.descendants)['+str(index)+']: ' + str(item).decode('utf-8').replace(u'\xa0', u''))
-            # except:
-                # pass
-            # ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[82])
-            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
-
-    if not ret:
-        print('trying condo')
-
-        data=None
-        offset=82
-        blk_str = convertBlock(block)
-        if not blk_str:
-            blk_str = ''
-        lot_str = convertLot(lot)
-        data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+str(subid)+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-        req = requests.post(url, headers=headers, data=data)
-        # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
-        print(data)
-        soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
-#         print(soup.prettify())
-#         print_headers(the_url, 'html.parser')
-        rers_cell = soup.find(text="Real Estate Records Search")
-        #print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
-        aerials = soup.find_all('a', text="Aerial")
-        if aerials and len(aerials) > 1:
-            # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
-            print('ignoring this whole page because we have more than one result (tax ids)')
-            rers_cell = None
-        if rers_cell is not None:
-            ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
+#     if not ret:
+#         print('trying condo')
+#
+#         data=None
+#         offset=82
+#         blk_str = convertBlock(block)
+#         if not blk_str:
+#             blk_str = ''
+#         lot_str = convertLot(lot)
+#         data='SearchBy=PID&twp='+str(t)+'&rng='+str(r)+'&sec='+str(s)+'&subn='+str(subid)+'&blk='+str(blk_str)+'&lot='+str(lot_str)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#         req = requests.post(url, headers=headers, data=data)
+#         # the_url="https://legacy.bcpao.us/asp/find_property.asp?"+'SearchBy=Sub&sub='+urllib.quote(sub)+'&blk='+str(block)+'&lot='+str(lot)+'&gen=T&tax=T&bld=T&oth=T&lnd=T&sal=T&leg=T'
+#         print(data)
+#         soup = BeautifulSoup(req.text.encode('utf-8'), 'html.parser')
+# #         print(soup.prettify())
+# #         print_headers(the_url, 'html.parser')
+#         rers_cell = soup.find(text="Real Estate Records Search")
+#         #print_small_texts(list(rers_cell.parent.parent.parent.parent.parent.descendants), max=50)
+#         aerials = soup.find_all('a', text="Aerial")
+#         if aerials and len(aerials) > 1:
+#             # need to ignore this whole page if we have more than one result. can search for how many "Aerial" there are
+#             print('ignoring this whole page because we have more than one result (tax ids)')
+#             rers_cell = None
+#         if rers_cell is not None:
+#             ret=str(list(rers_cell.parent.parent.parent.parent.parent.descendants)[offset])
 
     if not ret:
         print('no bcpao acct, no address')
@@ -617,7 +654,8 @@ def get_bcpaco_item(acct):
             # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
             # # # if str(item).startswith('7667'):
                 # # # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
-            ret['latest market value total']=str(list(vs_cell.parent.parent.parent.parent.descendants)[38])
+            # ret['latest market value total']=str(list(vs_cell.parent.parent.parent.parent.descendants)[38])
+            pass
         # ret['zip_code']=ret['address'][-5:]
 
         bi_cell = soup.find(text="Building Information")
@@ -646,8 +684,8 @@ def get_bcpaco_item(acct):
             # for index,item in enumerate(list(mvt.parent.parent.descendants)):
                 # print('list(gpc.parent.parent.parent.descendants)['+str(index)+']: '+str(item))
             if mvt:
-                ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
-
+                # ret['latest market value total']=str(list(mvt.parent.parent.descendants)[13])
+                pass
         if 'latest market value total' not in ret:
             # with closing(urlopen(the_url)) as f:
             #     html = f.read().replace(u'\xa0', u'').encode('utf-8')
@@ -806,6 +844,80 @@ def get_bcpaco_item(acct):
     if 'use code' in ret and ret['use code']['use_code'] in manuf_codes:
         ret['manuf']=True
 
+    # https://bcpao.us/api/v1/account/2613083
+
+    parcel_data = get_parcelData_by_acct2(acct)
+    parsed_json = json.loads(parcel_data)
+    addr_str = ''
+    if 'Multiple Addresses' in parsed_json['siteAddress'] and len(parsed_json['siteAddresses']) > 0:
+        addr_str = parsed_json['siteAddresses'][0]['siteAddress']
+    else:
+        addr_str = parsed_json['siteAddress']
+    ret['address'] = addr_str #.replace('\\r\\n','').strip()
+    ret['zip_code'] = ret['address'][-5:]
+    fc = ''
+    if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(parsed_json['buildings']) > 0 and 'constructionInfo' in parsed_json['buildings'][0]:
+        for bseq in parsed_json['buildings'][0]['constructionInfo']:
+            if 'code' in bseq and 'FRAME' in bseq['code']:
+                fc = bseq['description']
+                break
+    ret['frame code'] = re.sub(' +',' ', fc).replace(' ,', ',')
+
+    yb_str = ''
+    if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
+            parsed_json['buildings']) > 0 and 'yearBuilt' in parsed_json['buildings'][0]:
+        yb_str = str(parsed_json['buildings'][0]['yearBuilt'])
+    ret['year built'] = yb_str
+
+    tba_str = ''
+    if parsed_json is not None and 'buildings' in parsed_json and parsed_json['buildings'] is not None and len(
+            parsed_json['buildings']) > 0 and 'totalBaseArea' in parsed_json['buildings'][0]:
+        tba_str = str(parsed_json['buildings'][0]['totalBaseArea'])
+    ret['total base area'] = tba_str
+
+
+    # ret['total base area'] = str(parsed_json['buildings'][0]['totalBaseArea'])
+
+    lmvt_str = ''
+    if parsed_json is not None and 'valueSummary' in parsed_json and parsed_json['valueSummary'] is not None and len(
+            parsed_json['valueSummary']) > 0 and 'marketVal' in parsed_json['valueSummary'][0]:
+        val_ = parsed_json['valueSummary'][0]['marketVal']
+        locale.setlocale(locale.LC_ALL, 'en_US')
+        lmvt_str = locale.currency(val_, grouping=True)
+    ret['latest market value total'] = lmvt_str
+
+    # parcel_data = get_parcelData_by_acct(acct)
+    # val_ = json.loads(parcel_data)['valueSummary'][0]['marketVal']
+    # locale.setlocale(locale.LC_ALL, 'en_US')
+    # ret['latest market value total'] = locale.currency( val_, grouping=True )
+    pprint.pprint(ret)
+
+    return ret
+
+def do_photo(acct, parent_dir):
+    ret={}
+    ret['photo-url']='http://map.bcpao.us/Map2/Photos.aspx?taxAcct='+acct
+    print("ret['photo-url']="+ret['photo-url'])
+    f2 = urlopen(ret['photo-url'])
+    html2 = f2.read().replace(u'\xa0', u'').encode('utf-8')
+    # print(html2)
+    # m = re.match('.*img.*', html2)
+    # if m:
+    #     print('found')
+    #     print('0: '+m.group(0))
+    #     print('1: '+m.group(1))
+    # else:
+    #     print('not found')
+    soup = BeautifulSoup(html2, 'html.parser')
+    imgs = soup.find_all('img',)
+    print(imgs)
+    for i in imgs:
+        if 'photos' in i['src']:
+            my_img_url = 'http://map.bcpao.us/' + i['src']
+            print(my_img_url)
+            # (filename, headers) = urllib.urlretrieve(my_img_url, parent_dir + "/photo-" + acct + ".jpg")
+            # print(filename)
+            ret['img-url']=my_img_url
     return ret
 
 def get_acct(number, street, type2):
@@ -940,13 +1052,14 @@ def print_headers(the_url, parser_name=None):
     for t in texts:
         print(t.ljust(28)+': '+str(soup.find(text=t)))
 
-def fill_bcpao_from_legal(mr):
+def fill_bcpao_from_legal(mr, out_dir_htm):
     legal = mr.item['legal']
     if 'subd' in legal:
         acc = get_acct_by_legal((legal['subd'], legal['lt'], legal['blk'], legal['pb'], legal['pg'], legal['s'], legal['t'], legal['r'], legal['subid']))
         # logging.debug('a: ' + (str(acc) if acc else 'None'))
         mr.item['bcpao_acc'] = acc
         mr.item['bcpao_item'] = get_bcpaco_item(acc)
+        # mr.item['bcpao_item']['photo'] = do_photo(acc, out_dir_htm)
     #mr.item['bcpao_radius'] = bcpao_radius.get_average_from_radius(mr.item['bcpao_acc'])
     # logging.debug('asdfasd 1.5 ' + pprint.pformat(mr.item))
     legals = mr.item['legals']
@@ -1016,6 +1129,37 @@ def main():
 
 
     # print('done')
+
+def get_parcelData_by_acct(acct):
+    print('get_parcelData_by_acct('+str(acct)+')')
+    # (Township - Range - Section - Subdivision - block - lot)
+    # url = 'https://www.bcpao.us/api/search/parcelData?account='+str(acct)+''
+    # https://bcpao.us/api/v1/search?account=2613083&activeonly=true&size=10&page=1
+    url = 'https://bcpao.us/api/v1/search?account='+str(acct)+'&activeonly=true&size=10&page=1'
+    headers = ''  # get_headers(cfid, cftoken)
+    data = ''  # get_data(year, court_type, seq_number)
+    #     r = requests.post(url, data, headers=headers, stream=True)
+    # print('url='+url)
+    r = requests.get(url)
+    # print(r.text)
+    return r.text
+
+def get_parcelData_by_acct2(acct):
+    print('get_parcelData_by_acct('+str(acct)+')')
+    # (Township - Range - Section - Subdivision - block - lot)
+    # url = 'https://www.bcpao.us/api/search/parcelData?account='+str(acct)+''
+    # https://bcpao.us/api/v1/search?account=2613083&activeonly=true&size=10&page=1
+    # https://bcpao.us/api/v1/account/2613083
+    # url = 'https://bcpao.us/api/v1/search?account='+str(acct)+'&activeonly=true&size=10&page=1'
+    url = 'https://bcpao.us/api/v1/account/'+str(acct)+''
+    headers = ''  # get_headers(cfid, cftoken)
+    data = ''  # get_data(year, court_type, seq_number)
+    #     r = requests.post(url, data, headers=headers, stream=True)
+    # print('url='+url)
+    headers = {'Accept': 'application/json'}
+    r = requests.get(url, headers=headers)
+    # print(r.text)
+    return r.text
 
 if __name__ == '__main__':
     # sys.exit(main())

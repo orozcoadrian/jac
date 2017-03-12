@@ -24,23 +24,28 @@ def get_data(year, court_type, seq_number):
     return 'CaseNumber1=05&CaseNumber2=' + year + '&CaseNumber3=' + court_type + '&CaseNumber4=' + seq_number + '&CaseNumber5=&CaseNumber6=&submit=Submit'
 
 
-def get_headers(cfid, cftoken):
+def get_headers(cfid, cftoken, jsessionid):
     return {
-        'Cookie':'CFID=' + cfid + '; CFTOKEN=' + cftoken,
+        'Cookie':'CFID=' + cfid + ';'
+                 +' CFTOKEN=' + cftoken+';'
+                 +' JSESSIONID='+str(jsessionid),
         'Content-Type':'application/x-www-form-urlencoded'}
 
 def case_info(out_dir, year, court_type, seq_number, cfid, cftoken):
     id2 = year+'_'+court_type+'_'+seq_number
+    logging.debug('hi')
+    logging.debug('case_info('+out_dir+', '+year+', '+court_type+', '+seq_number+', '+cfid+', '+cftoken+')')
     # print('case_info('+id+')')
     url = get_url()
-    headers=get_headers(cfid, cftoken)
+    headers=get_headers(cfid, cftoken, None)
     data=get_data(year, court_type, seq_number)
 #     r = requests.post(url, data, headers=headers, stream=True)
     r = requests.post(url, data, headers=headers, stream=True, timeout=5)
     #print(r.url)
-    # print(r.cookies)
+    logging.debug('r.cookies: '+str(r.cookies))
     # print(r.cookies['CFID'])
     # print(r.cookies['CFTOKEN'])
+    logging.debug('r.cookies["JSESSIONID"]: ' + str(r.cookies['JSESSIONID']))
     # print(r.text)
     #lines = r.text.split('\n')
     #for l in lines:
@@ -56,7 +61,7 @@ def case_info(out_dir, year, court_type, seq_number, cfid, cftoken):
                 if not block:
                     break
                 handle.write(block)
-    return ret
+    return ret, r.cookies['JSESSIONID']
 
 def get_case_number_url(cn):
     adate=time.strftime("%m/%d/%Y")#'5/31/2014'
@@ -69,11 +74,11 @@ def get_case_number_url(cn):
 
 
 def get_case_number_url(date_str, cn):
-    return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2015&n=&bt=OR&d=' + date_str + '&pt=-1&cn=' + cn + '&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
+    return 'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=1%2F1%2F1981&ed=5%2F31%2F2017&n=&bt=OR&d=' + date_str + '&pt=-1&cn=' + cn + '&dt=ALL%20DOCUMENT%20TYPES&st=casenumber&ss=ALL%20DOCUMENT%20TYPES'
 
 def do(out_dir, year, court_type, seq_number, cfid, cftoken):
-    ret1 = case_info(out_dir, year, court_type, seq_number, cfid, cftoken)
-    ret2 = reg(out_dir, year, court_type, seq_number, cfid, cftoken)
+    ret1, jsessionid = case_info(out_dir, year, court_type, seq_number, cfid, cftoken)
+    ret2 = reg(out_dir, year, court_type, seq_number, cfid, cftoken, jsessionid)
     ret = dict(itertools.chain(ret1.items(), ret2.items()))
 
     return ret
@@ -131,14 +136,16 @@ def get_lad_url_from_rtext(r_text):
     grid = get_reg_actions_dataset(r_text)
     return get_lad_from_reg_text2(grid)
 
-def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
+def reg(out_dir, year, court_type, seq_number, cfid, cftoken, jsessionid):
     ret = {}
     #indent = '                                                        '
     id2 = year+'_'+court_type+'_'+seq_number
-    r_text = get_reg_actions_text(year, court_type, seq_number)
+    r_text = get_reg_actions_text(year, court_type, seq_number, jsessionid)
     lad = get_lad_url_from_rtext(r_text)
     ret['latest_amount_due'] = lad
-    ret['orig_mtg_link'] = get_orig_mortgage_url_from_rtext(r_text)
+    url, tag = get_orig_mortgage_url_from_rtext(r_text)
+    ret['orig_mtg_link'] = url
+    ret['orig_mtg_tag'] = tag
 
     if out_dir:
         with open(out_dir+'/'+id2+'_reg_actions.htm', 'wb') as handle:
@@ -148,7 +155,7 @@ def reg(out_dir, year, court_type, seq_number, cfid, cftoken):
 
 
 def get_reg_actions_dataset(r_text):
-#     print(r_text[0:len(r_text)/2])
+    # print(r_text[0:len(r_text)/2])
 #     soup = BeautifulSoup(r_text)
 #     soup = BeautifulSoup(r_text.encode('utf-8'), 'html.parser')
     soup = BeautifulSoup(r_text.encode('utf-8'), 'lxml')
@@ -161,6 +168,7 @@ def get_reg_actions_dataset(r_text):
 #     print(soup.find_all('table')[1].find_all('tr'))
     items = []
     col_names = []
+    # print soup.prettify()
     trs = soup.find_all('table')[1].findAll("tr")
     for row, a in enumerate(trs):
 #         print 'r' + str(row) + '===' + str(a).replace("\n", "").replace("\r", "").replace("\t", "")
@@ -189,19 +197,27 @@ def get_reg_actions_dataset(r_text):
     return ret
 
 
-def get_reg_actions_text(year, court_type, seq_number):
-    url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm'
-    cfid = '1550556'
-    cftoken = '74317641'
-    headers = get_headers(cfid, cftoken)
+def get_reg_actions_text(year, court_type, seq_number, jsessionid):
+    logging.debug('get_reg_actions_text:')
+    url = 'https://vweb1.brevardclerk.us/facts/d_reg_actions.cfm?RequestTimeout=500'
+    logging.debug(url)
+    cfid = '4749086'
+    cftoken = '23056266'
+    headers = get_headers(cfid, cftoken, jsessionid)
+    logging.debug(headers)
     data = get_data(year, court_type, seq_number)
+    logging.debug(data)
 #     r = requests.post(url, data, headers=headers, stream=True)
-    r = requests.post(url, data, headers=headers, stream=True)
+    logging.debug('before reg actions request')
+    r = requests.get(url, data, headers=headers, stream=True)
     r_text = r.text
+    logging.debug(r.ok)
+    logging.debug(r.status_code)
+    logging.debug('is_redirect: '+str(r.is_redirect))
     return r_text
 
 def reg_actions_grid(year, court_type, seq_number):
-
+    logging.debug('reg_actions_grid('+year+', '+court_type+', '+seq_number+')')
     case_info_grid(year, court_type, seq_number) # have only been able to make reg work after case_info
 
     r_text = get_reg_actions_text(year, court_type, seq_number)
@@ -213,8 +229,9 @@ def get_orig_mortgage_url_from_rtext(r_text):
     return get_orig_mortgage_url_from_grid(grid)
 
 def case_info_grid(year, court_type, seq_number):
-    cfid = '1550556'
-    cftoken = '74317641'
+    # Referer	https://vweb1.brevardclerk.us/facts/caseno.cfm?CFID=4749086 & CFTOKEN=23056266
+    cfid = '4749086'
+    cftoken = '23056266'
     id2 = year+'_'+court_type+'_'+seq_number
     # print('case_info('+id+')')
     url = get_url()
@@ -223,7 +240,10 @@ def case_info_grid(year, court_type, seq_number):
 #     r = requests.post(url, data, headers=headers, stream=True)
     r = requests.post(url, data, headers=headers, stream=True)
     soup = BeautifulSoup(r.text.encode('utf-8'), 'html.parser')
-#     print(soup.prettify())
+    # print(url)
+    # print(data)
+    # print(headers)
+    # print(soup.prettify())
 
 def reg_actions_grid_by_cn(cn):
     cn_fields = get_case_number_fields(cn)
@@ -243,7 +263,7 @@ def get_case_number_fields(case_number):
 
 def get_orig_mortgage_url_from_grid(g):
     ret = None
-    valid_patterns_for_original_mortgage = ['NOTICE FILING ORIG NOTE & MTG', 'OR MTG', 'MTG & ORIG', 'COPY OF MTG', 'ORIGINAL NOTE & MORTGAGE DEED']
+    valid_patterns_for_original_mortgage = ['NOTICE FILING ORIG NOTE & MTG', 'OR MTG', 'MTG & ORIG', 'COPY OF MTG', 'ORIGINAL NOTE & MORTGAGE DEED', 'NTC FILING ORIG NOTE &/OR MTG', 'NOTICE OF FILING ORIGINAL NOTE', 'ORIGINAL NOTE & MORTGAGE']
 #     for i in g['items']:
 # #         pprint.pprint(i)
 # #         if 'Description' in i and ('OR MTG' in i['Description'] or 'MTG & ORIG' in i['Description'] or 'COPY OF MTG' in i['Description']):
@@ -256,7 +276,7 @@ def get_orig_mortgage_url_from_grid(g):
             print('getting by: '+x)
             break
 
-    return ret
+    return ret, x
 
 def get_orig_mortgage_url_from_grid2(g, a_pattern):
     ret = None

@@ -96,13 +96,15 @@ def get_legal_from_str(the_str):
     logging.info('get_legal_from_str('+legal_desc+')')
     ret={}
 
-    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
+    # m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(U (?P<u>\d+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) (ORB (?P<orb>\d+/\d+))? S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
+    m = re.search('(LT (?P<lt>[0-9a-zA-Z]+) )?(BLK (?P<blk>[0-9a-zA-Z]+) )?(U (?P<u>\d+) )?(PB (?P<pb>\d+) PG (?P<pg>\d+))?(?P<subd>.*) S (?P<s>\d+) T (?P<t>\d+G?) R (?P<r>\d+)( SUBID (?P<subid>[0-9a-zA-Z]+))?', the_str)
     if m:
         # pprint.pprint(m)
         # pprint.pprint(m.groups())
         # print(m.group('blk'))
         # return m.groupdict()
         ret = dict(itertools.chain(ret.items(), m.groupdict().items()))
+        ret['subd'] = ret['subd'].replace(' S 1/2 OF', '')
 
         # print(m.group(1)+','+m.group(2)+','+m.group(3))
         # ret['lt']=m.group(1)

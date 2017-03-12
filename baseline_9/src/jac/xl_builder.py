@@ -64,7 +64,8 @@ class MainSheetBuilder(object):
 #         headers.append(jac.xl3.Cell.from_display("Sub", width=1500))
 #         headers.append(jac.xl3.Cell.from_display("Blk", width=1500))
 #         headers.append(jac.xl3.Cell.from_display("Lot", width=1500))
-        headers.append(jac.xl3.Cell.from_link("bcpao", 'https://legacy.bcpao.us/asp/real_search.asp'))
+#         headers.append(jac.xl3.Cell.from_link("old_bcpao", 'https://legacy.bcpao.us/asp/real_search.asp'))
+        headers.append(jac.xl3.Cell.from_link("bcpao", 'https://www.bcpao.us/PropertySearch'))
         headers.append(jac.xl3.Cell.from_display("f_code"))
         headers.append(jac.xl3.Cell.from_display("owed_link"))
         headers.append(jac.xl3.Cell.from_display("owed", width=4000))
@@ -90,6 +91,7 @@ class MainSheetBuilder(object):
         return ''
     def add_to_row(self, row, r, row_index):
         i = r.get_item()
+        print('add_to_row count: ' + str(i['count']))
         for col_index, h in enumerate(self.get_headers()):
             str(col_index)
             if 'high' in h.get_display():
@@ -104,6 +106,7 @@ class MainSheetBuilder(object):
                 row.append(jac.xl3.Cell.from_display(i['foreclosure_sale_date']))
             if 'count' in h.get_display():
                 row.append(jac.xl3.Cell.from_display(i['count']))
+
             if 'address' in h.get_display():
                 the_str = ''
                 if 'bcpao_item' in i and 'address' in i['bcpao_item']:
@@ -126,11 +129,11 @@ class MainSheetBuilder(object):
             if 'case_info' in h.get_display():
                 link_str = self.get_case_info_link(i)# row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
-                row.append(jac.xl3.Cell.from_link('link', link_str))
+                row.append(jac.xl3.Cell.from_link('case_info', link_str))
             if 'reg_actions' in h.get_display():
                 link_str2 = self.get_reg_actions_link(i)# row_data.append(Formula('HYPERLINK("http://www.google.com";"Python")'))
                 # row.append(self.get_formula_hyperlink(link_str, link_str))
-                row.append(jac.xl3.Cell.from_link('link', link_str2))
+                row.append(jac.xl3.Cell.from_link('reg_actions', link_str2))
             if 'liens-name' in h.get_display():
                 value_to_use = jac.xl3.Cell.from_display('')
                 if r.get_name_combos() is not None and len(r.get_name_combos()) > 0:
@@ -181,7 +184,15 @@ class MainSheetBuilder(object):
                 if 'legal' in i and 'blk' in i['legal']:
                     the_str = i['legal']['blk']
                 row.append(jac.xl3.Cell.from_display(the_str))
-            if 'bcpao' in h.get_display():
+            # if 'old_bcpao' in h.get_display():
+            #     the_str = None
+            #     if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
+            #         the_str = i['bcpao_acc']
+            #     if the_str is None:
+            #         row.append(jac.xl3.Cell.from_display(''))
+            #     else:
+            #         row.append(jac.xl3.Cell.from_link(the_str, jac.bcpao.get_old_bcpao_query_url_by_acct(the_str)))
+            if 'bcpao' == h.get_display():
                 the_str = None
                 if 'bcpao_acc' in i and len(i['bcpao_acc']) > 0:
                     the_str = i['bcpao_acc']
@@ -211,8 +222,8 @@ class MainSheetBuilder(object):
                 row.append(jac.xl3.Cell.from_display(year))
             if 'owed - ass' in h.get_display():
                 row_str = str(row_index + 2)
-                owed_column = 'O' # latest_amount_due
-                ass_column = 'P' # latest market value total
+                owed_column = 'P' # latest_amount_due
+                ass_column = 'Q' # latest market value total
                 f_str = 'IF(AND(NOT(ISBLANK('+owed_column + row_str + ')),NOT(ISBLANK('+ass_column + row_str + '))),'+owed_column + row_str + '-'+ass_column + row_str + ',"")'
                 row.append(jac.xl3.Cell.from_formula(f_str))
             if 'db-addr' == h.get_display():
@@ -267,7 +278,7 @@ class MainSheetBuilder(object):
                 the_str = None
                 if 'orig_mtg_link' in i:
                     if i['orig_mtg_link'] and len(i['orig_mtg_link']) > 0:
-                        row.append(jac.xl3.Cell.from_link('link', i['orig_mtg_link']))
+                        row.append(jac.xl3.Cell.from_link(i['orig_mtg_tag'], i['orig_mtg_link']))
                     else:
                         row.append(jac.xl3.Cell.from_display(''))
             if 'taxes' in h.get_display():
@@ -293,7 +304,8 @@ class MainSheetBuilder(object):
     def get_base_area(self, i):
         the_strba = ''
         if 'bcpao_item' in i and 'total base area' in i['bcpao_item']:
-            the_strba = float(i['bcpao_item']['total base area'].replace(',', ''))
+            if len(i['bcpao_item']['total base area']) > 0:
+                the_strba = float(i['bcpao_item']['total base area'].replace(',', ''))
         return the_strba
 
     def get_year_built_str(self, i):

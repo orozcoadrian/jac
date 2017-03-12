@@ -29,6 +29,7 @@ class Cfm(Fetcher):
                 mr.item['latest_amount_due'] = values['latest_amount_due']
             if 'orig_mtg_link' in values:
                 mr.item['orig_mtg_link'] = values['orig_mtg_link']
+                mr.item['orig_mtg_tag'] = values['orig_mtg_tag']
 #             mr.item['orig_mtg_link']=cfm.get_orig_mortgage_url_by_cn(mr.item['case_number'])
 
 class Legal(Fetcher):
@@ -42,11 +43,14 @@ class Legal(Fetcher):
         # logging.debug('asdfasd 111 '+pprint.pformat(mr.item))
 
 class Bcpao(Fetcher):
+    def __init__(self, out_dir_htm):
+        self.out_dir_htm = out_dir_htm
+
     def get_name(self):
         return 'Bcpao'
 
     def fetch(self, mr):
-        bcpao.fill_bcpao_from_legal(mr)
+        bcpao.fill_bcpao_from_legal(mr, self.out_dir_htm)
 
 class Bcpao_db(Fetcher):
     def get_name(self):

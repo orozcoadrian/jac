@@ -85,7 +85,7 @@ class Jac(object):
         fetchers=[]
         fetchers.append(Cfm(out_dir_htm))
         fetchers.append(Legal())
-        fetchers.append(Bcpao())
+        fetchers.append(Bcpao(out_dir_htm))
         for r in mrs.get_records():
             print('count_id: ' + str(r.item['count']))
             for f in fetchers:

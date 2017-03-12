@@ -1,7 +1,6 @@
 # http://askubuntu.com/questions/116020/python-https-requests-urllib2-to-some-sites-fail-on-ubuntu-12-04-without-proxy
 import ssl
-
-
+import traceback
 
 ssl.PROTOCOL_SSLv23 = ssl.PROTOCOL_TLSv1
 
@@ -89,8 +88,8 @@ def main3():
     logging.info(dates)
     dates_to_add = dates#[0:2]
     if args.dates:
-        dates_to_add = [datetime.datetime.strptime(x, '%m/%d/%Y') for x in args.dates]
-    date_strings_to_add = [x.strftime("%m/%d/%Y") for x in dates_to_add]
+        dates_to_add = [datetime.datetime.strptime(x, '%Y-%m-%d') for x in args.dates]
+    date_strings_to_add = [x.strftime("%Y-%m-%d") for x in dates_to_add]
 
     #date_strings_to_add2 = [x.strftime("%A %b %d") for x in dates_to_add]
     #date_strings_to_add2.extend(args.dates)
@@ -196,7 +195,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
         logging.info('after: ' + str(len(mrs.get_records())))
 
     logging.info('after filters: ' + str(len(mrs.get_records())))
-    sheet_name = date_string_to_add.replace('/', '_')[:5]
+    sheet_name = date_string_to_add[5:]
     out_dir_htm = out_dir +'/'+sheet_name+ '/html_files'
     os.makedirs(out_dir_htm)
 
@@ -205,7 +204,7 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
     fetchers = []
     fetchers.append(Cfm(out_dir_htm))
     fetchers.append(Legal())
-    fetchers.append(Bcpao())
+    fetchers.append(Bcpao(out_dir_htm))
 #     fetchers.append(Bcpao_db())
     fetchers.append(Taxes())
     for r in mrs.get_records():
@@ -214,18 +213,19 @@ def get_mainsheet_dataset(args, fnum, mrs, out_dir, date_string_to_add):
             logging.info(f.get_name())
             done = False
             retries_count = 0
-            while not done and retries_count < 100:
+            while not done and retries_count < 10:
                 try:
                     f.fetch(r)
                     done = True
                 except Exception as e:
                     logging.error(' got an error when fetching: ' + str(e))
+                    traceback.print_exc(file=sys.stdout)
                     logging.error(' retrying...')
                     retries_count += 1
                     logging.error(' retries_count: ' + str(retries_count))
                     time.sleep(1)
 
-    Maps().do_map_output(mrs, out_dir, sheet_name)
+    # Maps().do_map_output(mrs, out_dir, sheet_name)
 
     logging.info('fetch complete')
     logging.info('num records: '+str(len(mrs.get_records())))

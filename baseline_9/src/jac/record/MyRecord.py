@@ -4,12 +4,14 @@ Created on Jul 27, 2014
 @author: Adrian
 '''
 import sys,os
-sys.path.append(os.path.realpath(__file__)+"/../../../")
-print(str(sys.path))
+# sys.path.append(os.path.realpath(__file__)+"/../../../")
+# print(str(sys.path))
 import pprint
 import re
+
+# from jac import bcpao
 from jac.cfm import cfm
-from jac import bclerk, bcpao, bcpao_radius
+# from jac import bclerk, bcpao, bcpao_radius
 
 class MyRecord(object):
     '''

@@ -7,6 +7,7 @@ import jac
 from jac.xl_builder import MainSheetBuilder
 
 
+
 class Maps(object):
     def __init__(self):
         print('here')
@@ -42,6 +43,7 @@ class Maps(object):
                     my_d['title'] = r.get_item()['bcpao_item']['address']
                     my_d['title'] = '"' + my_d['title'] + '"'
                     my_d['adr_geo'] = r.get_item()['bcpao_item']['address-geo'].replace('\n', ' ')
+                    #my_d['img'] = r.get_item()['bcpao_item']['photo']['img-url']
                     mystr = r.get_item()['bcpao_acc']
                     url = jac.bcpao.get_bcpao_query_url_by_acct(mystr)
                     bcpao_line = 'bcpao: ' + "<a href='" + url + "' target='_blank' '>" + mystr + "</a>"
@@ -72,6 +74,11 @@ class Maps(object):
                     subtitle_lines.append('assessed: ' + str(sheet_builder.get_assessed_str(r.get_item())))
                     subtitle_lines.append('base_area: ' + str(sheet_builder.get_base_area(r.get_item())))
                     subtitle_lines.append('year: ' + str(sheet_builder.get_year_built_str(r.get_item())))
+                    # subtitle_lines.append('<img src=\'http://map.bcpao.us//photos/active/24/2410230011.jpg\' width=200/>')
+                    if 'photo' in r.get_item()['bcpao_item'] and 'img-url' in r.get_item()['bcpao_item']['photo']:
+                        subtitle_lines.append('<img src=\'' + str(r.get_item()['bcpao_item']['photo']['img-url']) + '\' width=200/>')
+                    # subtitle_lines.append("<img src='"+r.get_item()['bcpao_item']['photo']['img-url']+"'/>")
+                    #<img src=\http://map.bcpao.us//photos/active/27/2707117011.jpg\/>
                     # my_d['subtitle'] += case_title_line
                     my_d['subtitle'] = '<BR>'.join(subtitle_lines)
                     my_d['subtitle'] = '"' + my_d['subtitle'] + '"'
@@ -84,7 +91,7 @@ class Maps(object):
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
     <title>Google Maps JavaScript API v3 Example: Geocoding Simple</title>
-    <script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD0S_Dit812L1QPhjS8HvB_nrUKAF8y24U&callback=initMap" type="text/javascript"></script>
     <script type="text/javascript">
       var geocoder;
       var map;
@@ -115,7 +122,7 @@ class Maps(object):
     				});
 
     				var infowindow = new google.maps.InfoWindow(
-    					{ content: '<b>'+the_result.title+'</b><br>'+the_result.subtitle+'</a>',
+    					{ content: '<b>'+the_result.title+'</b><br>'+the_result.subtitle+'',
     					  size: new google.maps.Size(150,50)
     					});
 
@@ -145,7 +152,7 @@ class Maps(object):
     <a href="http://www.google.com" target="_blank">link to google.com</a><br>
     <a href="http://www.google.com" target="_blank">link to foreclosures list</a><br>
     <a href="http://www.google.com" target="_blank">link to bcpao</a><br>
-     <div id="map_canvas" style="width:100%; height:75%">
+     <div id="map_canvas" style="height:1000px">
     </script>
 
     </body>
