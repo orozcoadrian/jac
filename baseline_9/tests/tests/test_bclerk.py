@@ -254,10 +254,10 @@ class Test(unittest.TestCase):
         actual = jac.bclerk.oncoreweb_by_legal('LT 1 PB 40 PG 33 HARBOUR LIGHTS PHASE II S 02 T 27 R 37 SUBID PY')
         print(actual)
         self.assertEqual(
-            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&st=legal&ld=Lot%201%20Plat%20BK%2040%20Plat%20Pg%2033%20Section%2002%20Township%2027%20Range%2037%20SUBID%20PY%20'
+            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&cn=&dt=&st=legal&ld='
             , actual)
         self.assertEqual(
-            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CBlock%2C%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&cn=&dt=&st=legal&ld='
+            'http://web1.brevardclerk.us/oncoreweb/search.aspx?bd=01%2F01%2F1981&ed=4%2F19%2F2016&bt=OR&d=4%2F19%2F2016&pt=-1&lf=Lot%2C1%7CLand_Lot%2C40%7CDistrict%2C33%7CPropSection%2C02%7CBuilding%2C27%7CRange%2C37%7CPhase%2CPY&cn=&dt=&st=legal&ld='
             , actual)
 
     def test_do_oncoreweb_legal2(self):

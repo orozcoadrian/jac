@@ -422,7 +422,7 @@ def get_acct_by_legal(legal):
         # parcel_data = get_parcelData_by_acct(acct)
         if req.status_code == 200 and len(req.text) > 0:
             loaded_json = json.loads(req.text) # use req.json() instead?
-            if len(loaded_json) == 1:
+            if loaded_json and len(loaded_json) == 1:
                 ret = loaded_json[0]['account']
         # locale.setlocale(locale.LC_ALL, 'en_US')
         # ret['latest market value total'] = locale.currency(val_, grouping=True)
